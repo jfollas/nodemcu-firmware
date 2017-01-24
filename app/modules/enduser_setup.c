@@ -127,6 +127,7 @@ typedef struct
   uint8_t callbackDone;
   uint8_t lastStationStatus;
   uint8_t connecting;
+  char *extra_data;
 } enduser_setup_state_t;
 
 static enduser_setup_state_t *state;
@@ -639,6 +640,7 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
   
   char *name_str = (char *) ((uint32_t)strstr(&(data[6]), "wifi_ssid="));
   char *pwd_str = (char *) ((uint32_t)strstr(&(data[6]), "wifi_password="));
+
   if (name_str == NULL || pwd_str == NULL)
   {
     ENDUSER_SETUP_DEBUG("Password or SSID string not found");
@@ -647,6 +649,7 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
 
   int name_field_len = LITLEN("wifi_ssid=");
   int pwd_field_len = LITLEN("wifi_password=");
+
   char *name_str_start = name_str + name_field_len;
   char *pwd_str_start = pwd_str + pwd_field_len;
 
@@ -654,10 +657,9 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
   int pwd_str_len = enduser_setup_srch_str(pwd_str_start, "& ");
   if (name_str_len == -1 || pwd_str_len == -1)
   {
-    ENDUSER_SETUP_DEBUG("Password or SSID HTTP paramter divider not found");
+    ENDUSER_SETUP_DEBUG("Password or SSID HTTP parameter divider not found");
     return 1;
   }
-
 
   struct station_config *cnf = luaM_malloc(lua_getstate(), sizeof(struct station_config));
   c_memset(cnf, 0, sizeof(struct station_config));
@@ -671,6 +673,25 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
     return 1;
   }
 
+  // If Querystring contains an "extra" parameter, capture the value to pass out of the success callback
+  char *extra_str = (char *) ((uint32_t)strstr(&(data[6]), "extra="));
+  if (extra_str != NULL)
+  {
+    int extra_field_len = LITLEN("extra=");
+    char *extra_str_start = extra_str + extra_field_len;
+    int extra_str_len = enduser_setup_srch_str(extra_str_start, "& ");  
+
+    if (extra_str_len != -1)
+    {
+      state->extra_data = (char *) os_zalloc(extra_str_len + 1);
+      if (state->extra_data == NULL)
+      {
+        return 2;
+      }
+
+      c_memcpy(&(state->extra_data), &(extra_str_start), extra_str_len);
+    }
+  }
 
   ENDUSER_SETUP_DEBUG("");
   ENDUSER_SETUP_DEBUG("WiFi Credentials Stored");
@@ -679,6 +700,8 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
   ENDUSER_SETUP_DEBUG(cnf->ssid);
   ENDUSER_SETUP_DEBUG("pass: ");
   ENDUSER_SETUP_DEBUG(cnf->password);
+  ENDUSER_SETUP_DEBUG("extra: ");
+  ENDUSER_SETUP_DEBUG(state->extra_data);  
   ENDUSER_SETUP_DEBUG("-----------------------");
   ENDUSER_SETUP_DEBUG("");
 
@@ -1188,7 +1211,7 @@ static err_t enduser_setup_http_recvcb(void *arg, struct tcp_pcb *http_client, s
     }
     else if (c_strncmp(data + 4, "/status.json", 12) == 0)
     {
-    enduser_setup_serve_status_as_json(http_client);
+      enduser_setup_serve_status_as_json(http_client);
     }    
     else if (c_strncmp(data + 4, "/status", 7) == 0)
     {
@@ -1529,6 +1552,7 @@ static void enduser_setup_free(void)
   }
 
   c_free(state->http_payload_data);
+  c_free(state->extra_data);
 
   free_scan_listeners ();
 

@@ -675,6 +675,7 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
 
   // If Querystring contains an "extra" parameter, capture the value to pass out of the success callback
   char *extra_str = (char *) ((uint32_t)strstr(&(data[6]), "extra="));
+
   if (extra_str != NULL)
   {
     int extra_field_len = LITLEN("extra=");

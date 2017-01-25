@@ -242,7 +242,8 @@
 		}
 		function submit() {
 			submitted = true;
-			var url = '/setwifi?wifi_ssid=' + encodeURIComponent($('#ssid').value) + '&wifi_password=' + encodeURIComponent($('#wifi_password').value);
+			var extra = JSON.stringify({test:123,url:'https://github.com/nodemcu/nodemcu-firmware'});
+			var url = '/setwifi?wifi_ssid=' + encodeURIComponent($('#ssid').value) + '&wifi_password=' + encodeURIComponent($('#wifi_password').value) + '&extra=' + encodeURIComponent(extra);
 			clearTimeout(rs);
 			fetch(url, 'GET', newSt, 2);
 			cur('#f3');

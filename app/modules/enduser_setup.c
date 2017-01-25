@@ -692,8 +692,7 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
       {
        return 2;
       }
-      ENDUSER_SETUP_DEBUG("DID ALLOC"); 
-      c_memcpy(&(state->extra_data), extra_str_start, extra_str_len);      
+      err = enduser_setup_http_urldecode(state->extra_data, extra_str_start, extra_str_len, sizeof(state->extra_data));      
       ENDUSER_SETUP_DEBUG("DID memcpy");       
     }
   }

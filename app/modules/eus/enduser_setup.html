@@ -274,7 +274,7 @@
 				});
 				var ops = '<option>Select a Network...</option>';
 				for (var i = 0; i < list.length; ++i) {
-					ops += '<option value="' + list[i].ssid + '">' + list[i].ssid + ' [' + list[i].bssid + '] ' + signal(list[i].rssi) + '</option>';
+					ops += '<option value="' + list[i].ssid + '">' signal(list[i].rssi) + + list[i].ssid + ' [' + list[i].bssid + '] ' +  '</option>';
 				}
 				ap.innerHTML = ops;
 				ab.disabled = false;
@@ -286,8 +286,8 @@
 			}
 		}
 		function signal(r) {
-			var bars=Math.max(0, Math.min(5, 5 - Math.floor(Math.max(0,Math.abs(r) - 67)) / 5));
-			return ' ' + '&#9724;'.repeat(bars) + '&#9723;'.repeat(5 - bars)
+			var bars=Math.max(0, Math.min(4, 4 - Math.floor(Math.max(0,Math.abs(r) - 67)) / 4));
+			return '&#9724;'.repeat(bars) + '&#9723;'.repeat(5 - bars) + '&nbsp;';
 		}
 		function togAp(ev, force) {
 			if (!force || ap.style.display == 'block') {

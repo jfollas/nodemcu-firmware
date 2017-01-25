@@ -247,8 +247,9 @@
 			if (extra != null)
 				url += '&extra=' + encodeURIComponent(extra);
 			clearTimeout(rs);
+			rs = to(refr, 10);			
 			$('#st').innerText = "Submitting...";
-			fetch(url, 'GET', newSt, 2);
+			fetch(url, 'GET', newSt, 5);
 			cur('#f3');
 		}
 		function fetch(url, method, callback, time_out) {

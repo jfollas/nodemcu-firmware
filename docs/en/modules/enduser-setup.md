@@ -12,8 +12,9 @@ After running [`enduser_setup.start()`](#enduser_setupstart), a wireless network
 of any website (e.g., `http://example.com/` will work, but do not use `.local` domains because it will fail on iOS). A web page similar to the picture above will load, allowing the 
 end user to provide their Wi-Fi information.
 
-After an IP address has been successfully obtained, then this module will stop as if [`enduser_setup.stop()`](#enduser_setupstop) had been called. There is a 10-second delay before
-teardown to allow connected clients to obtain a last status message while the SoftAP is still active.
+After an IP address has been successfully obtained, then this module will stop as if [`enduser_setup.stop()`](#enduser_setupstop) had been called. There is a 15-second delay before
+teardown to allow connected clients to obtain a last status message while the SoftAP is still active, and will shut down right after that status message is served. _Note: The delay is
+to accommodate the radio channel changing that may take place while the WiFi Station attempts to connect, which causes the SoftAP to be temporarily unaccessible to connected devices._
 
 Alternative HTML can be served by placing a file called `enduser_setup.html` on the filesystem. Everything needed by the web page must be included in this one file. This file will be kept 
 in RAM, so keep it as small as possible. The file can be gzip'd ahead of time to reduce the size (i.e., using `gzip -n` or `zopfli`), and when served, the End User Setup module will add 
@@ -26,13 +27,30 @@ The following HTTP endpoints exist:
 |Endpoint|Description|
 |--------|-----------|
 |/|Returns HTML for the web page. Will return the contents of `enduser_setup.html` if it exists on the filesystem, otherwise will return a page embedded into the firmware image.|
-|/aplist|Forces the ESP8266 to perform a site survey across all channels, reporting access points that it can find. Return payload is a JSON array: `[{"ssid":"foobar","rssi":-36,"chan":3}]`|
+|/aplist|Forces the ESP8266 to perform a site survey across all channels, reporting access points that it can find. Return payload is a JSON array: `[{"ssid":"foobar","rssi":-36,"chan":3,"bssid":"12:34:56:78:9a:bc"}]`|
 |/generate_204|Returns a HTTP 204 status (expected by certain Android clients during Wi-Fi connectivity checks)|
-|/status|Returns plaintext status description, used by the web page|
+|/status|Returns plaintext status description, to be rendered directly by a webpage without needing to parse JSON|
 |/status.json|Returns a JSON payload containing the ESP8266's chip id in hexadecimal format and the status code: 0=Idle, 1=Connecting, 2=Wrong Password, 3=Network not Found, 4=Failed, 5=Success|
 |/setwifi|Endpoint intended for services to use for setting the wifi credentials. Identical to `/update` except returns the same payload as `/status.json` instead of redirecting to `/`.|
 |/update|Form submission target. Example: `http://example.com/update?wifi_ssid=foobar&wifi_password=CorrectHorseBatteryStaple`. Must be a GET request. Will redirect to `/` when complete. |
 
+## Providing Extra Data ##
+
+The `setwifi` and `update` endpoints expect parameters named `wifi_ssid` and `wifi_password`. In addition, any extra data collected by the
+web page can be passed on the querystring as a single parameter named `extra`. This value will be returned to Lua as the first argument of 
+the Success callback function once a network connection is successfully established.
+
+To pass more than one value, combine into a JavaScript object and then `JSON.stringify()` it. Be sure to URL encode the resulting string
+when building the URL.
+
+```javascript
+var extra = JSON.stringify({test:123, url:'https://github.com/nodemcu/nodemcu-firmware'});
+var url = '/setwifi?wifi_ssid=' + encodeURIComponent($('#ssid').value) 
+        + '&wifi_password=' + encodeURIComponent($('#wifi_password').value)
+        + '&extra=' + encodeURIComponent(extra);
+```
+
+To create a Lua table from a JSON string in your callback function, you can use the [CJSON](cjson) module.
 
 ## enduser_setup.manual()
 
@@ -72,10 +90,10 @@ Starts the captive portal.
 *Note: Calling start() while EUS is already running is an error, and will result in stop() to be invoked to shut down EUS.*
 
 #### Syntax
-`enduser_setup.start([onConnected()], [onError(err_num, string)], [onDebug(string)])`
+`enduser_setup.start([onConnected(string)], [onError(err_num, string)], [onDebug(string)])`
 
 #### Parameters
- - `onConnected()` callback will be fired when an IP-address has been obtained, just before the enduser_setup module will terminate itself
+ - `onConnected()` callback will be fired when an IP-address has been obtained, just before the enduser_setup module will terminate itself. If "extra" data is provided on the querystring, then it will be returned as the first argument of the callback.
  - `onError()` callback will be fired if an error is encountered. `err_num` is a number describing the error, and `string` contains a description of the error.
  - `onDebug()` callback is disabled by default (controlled by `#define ENDUSER_SETUP_DEBUG_ENABLE` in `enduser_setup.c`). It is intended to be used to find internal issues in the module. `string` contains a description of what is going on.
 
@@ -85,8 +103,9 @@ Starts the captive portal.
 #### Example
 ```lua
 enduser_setup.start(
-  function()
+  function(data)
     print("Connected to wifi as:" .. wifi.sta.getip())
+    print("Extra data:" .. data)
   end,
   function(err, str)
     print("enduser_setup: Err #" .. err .. ": " .. str)

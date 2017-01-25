@@ -127,6 +127,7 @@ typedef struct
   uint8_t callbackDone;
   uint8_t lastStationStatus;
   uint8_t connecting;
+  uint8_t shuttingDown;
   char *extra_data;
 } enduser_setup_state_t;
 
@@ -297,6 +298,7 @@ static void enduser_setup_check_station(void *p)
   state->success = 1;
   state->lastStationStatus = 5; /*  We have an IP Address, so the status is 5 (as of SDK 1.5.1) */
   state->connecting = 0;
+  state->shuttingDown = 0;
   
 #if ENDUSER_SETUP_DEBUG_ENABLE  
   char debuginfo[100];
@@ -323,7 +325,7 @@ static void enduser_setup_check_station(void *p)
   if (!manual)
   {
     os_timer_setfn(&(state->shutdown_timer), enduser_setup_stop_callback, NULL);
-    os_timer_arm(&(state->shutdown_timer), 10*1000, FALSE);
+    os_timer_arm(&(state->shutdown_timer), 15*1000, FALSE);
   }
 }
 
@@ -645,6 +647,7 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
 
   state->success = 0;
   state->lastStationStatus = 0;
+  state->shuttingDown = 0;
   
   /* 
      Data will be the entire request, and starts with something like: 
@@ -905,6 +908,14 @@ static void enduser_setup_serve_status(struct tcp_pcb *conn)
   {
     enduser_setup_http_serve_header(conn, http_header_500, LITLEN(http_header_500));
   }
+
+  /* No need to wait the entire shutdown period since we were able to serve a status message */
+  if (state->success && !state->connecting && !state->shuttingDown) {
+    state->shuttingDown = 1;
+    os_timer_disarm(&(state->shutdown_timer));
+    os_timer_setfn(&(state->shutdown_timer), enduser_setup_stop_callback, NULL);
+    os_timer_arm(&(state->shutdown_timer), 1*1000, FALSE);    
+  } 
 }
 
 static void enduser_setup_serve_status_as_json (struct tcp_pcb *http_client)
@@ -931,6 +942,14 @@ static void enduser_setup_serve_status_as_json (struct tcp_pcb *http_client)
   char buf[c_strlen(fmt) + NUMLEN(len) + len - 4];
   len = c_sprintf (buf, fmt, len, json_payload);
   enduser_setup_http_serve_header (http_client, buf, len);
+
+  /* No need to wait the entire shutdown period since we were are able to serve a status message */
+  if (state->success && !state->connecting && !state->shuttingDown) {
+    state->shuttingDown = 1;
+    os_timer_disarm(&(state->shutdown_timer));
+    os_timer_setfn(&(state->shutdown_timer), enduser_setup_stop_callback, NULL);
+    os_timer_arm(&(state->shutdown_timer), 1*1000, FALSE);    
+  } 
 }
 
 
@@ -1681,6 +1700,7 @@ static int enduser_setup_init(lua_State *L)
       state->callbackDone = 0;
       state->lastStationStatus = 0;
       state->connecting = 0;    
+      state->shuttingDown = 0;
     }
   }
 

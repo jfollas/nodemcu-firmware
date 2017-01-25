@@ -678,11 +678,11 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
 
   // If Querystring contains an "extra" parameter, capture the value to pass out of the success callback
 
-ENDUSER_SETUP_DEBUG(extra_str);
-//  if (extra_str != NULL)
-//  {
-//    int extra_field_len = LITLEN("extra=");
-//    char *extra_str_start = extra_str + extra_field_len;
+  if (extra_str != NULL)
+  {
+    int extra_field_len = LITLEN("extra=");
+    char *extra_str_start = extra_str + extra_field_len;
+    ENDUSER_SETUP_DEBUG(extra_str_start);
  //   int extra_str_len = enduser_setup_srch_str(extra_str_start, "& ");  
 
  //   if (extra_str_len != -1)
@@ -696,7 +696,7 @@ ENDUSER_SETUP_DEBUG(extra_str);
 
       //c_memcpy(&(state->extra_data), &(extra_str_start), extra_str_len);
  //   }
-//  }
+  }
 
   ENDUSER_SETUP_DEBUG("");
   ENDUSER_SETUP_DEBUG("WiFi Credentials Stored");

@@ -694,10 +694,12 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
       {
        return 2;
       }
-      err = enduser_setup_http_urldecode(state->extra_data, extra_str_start, extra_str_len, sizeof(state->extra_data));      
-  char debuginfo[200];
-  c_sprintf(debuginfo, "extra len: %d, extra_data: %s", sizeof(state->extra_data), state->extra_data);
-  ENDUSER_SETUP_DEBUG(debuginfo);        
+      err = enduser_setup_http_urldecode(state->extra_data, extra_str_start, extra_str_len, extra_str_len + 1);    
+      if (err != 0)
+      {
+        ENDUSER_SETUP_DEBUG("Unable to decode the extra querystring data");
+        return 1;
+      }             
     }
   }
 

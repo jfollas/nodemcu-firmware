@@ -274,7 +274,7 @@
 				});
 				var ops = '<option>Select a Network...</option>';
 				for (var i = 0; i < list.length; ++i) {
-					ops += '<option value="' + list[i].ssid + '">' signal(list[i].rssi) + + list[i].ssid + ' [' + list[i].bssid + '] ' +  '</option>';
+					ops += '<option value="' + list[i].ssid + '">' + signal(list[i].rssi) + list[i].ssid + ' [' + list[i].bssid + '] ' +  '</option>';
 				}
 				ap.innerHTML = ops;
 				ab.disabled = false;

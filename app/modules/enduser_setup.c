@@ -1106,7 +1106,7 @@ static void on_scan_done (void *arg, STATUS status)
       strcpy (p, entry_bssid);
       p += sizeof (entry_bssid) -1;
 
-      p += c_sprintf (p, "%02X:%02X:%02X:%02X:%02X:%02X", wn->bssid[0], wn->bssid[1], wn->bssid[2], wn->bssid[3], wn->bssid[4], wn->bssid[5]);  
+      p += c_sprintf (p, "\"%02X:%02X:%02X:%02X:%02X:%02X\"", wn->bssid[0], wn->bssid[1], wn->bssid[2], wn->bssid[3], wn->bssid[4], wn->bssid[5]);  
 
       *p++ = '}';
     }

@@ -638,7 +638,10 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
   state->success = 0;
   state->lastStationStatus = 0;
   
-  ENDUSER_SETUP_DEBUG(data);
+  /* 
+     Data will be the entire request, and starts with something like: 
+     GET /setwifi?wifi_ssid=YourSSID&wifi_password=12345&extra=%7B%22test%22%3A123%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Fnodemcu%2Fnodemcu-firmware%22%7D HTTP/1.1
+  */
 
   char *name_str  = (char *) ((uint32_t)strstr(&(data[6]), "wifi_ssid="));
   char *pwd_str   = (char *) ((uint32_t)strstr(&(data[6]), "wifi_password="));
@@ -682,8 +685,11 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
   {
     int extra_field_len = LITLEN("extra=");
     char *extra_str_start = extra_str + extra_field_len;
-    ENDUSER_SETUP_DEBUG(extra_str_start);
     int extra_str_len = enduser_setup_srch_str(extra_str_start, "& ");  
+
+  char debuginfo[50];
+  c_sprintf(debuginfo, "extra len: %d", extra_str_len);
+  ENDUSER_SETUP_DEBUG(debuginfo);  
 
     if (extra_str_len != -1)
     {
@@ -693,7 +699,6 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
        return 2;
       }
       err = enduser_setup_http_urldecode(state->extra_data, extra_str_start, extra_str_len, sizeof(state->extra_data));      
-      ENDUSER_SETUP_DEBUG("DID memcpy");       
     }
   }
 

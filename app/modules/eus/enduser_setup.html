@@ -242,10 +242,12 @@
 		}
 		function submit() {
 			submitted = true;
-			//var extra = JSON.stringify({test:123,url:'https://github.com/nodemcu/nodemcu-firmware'});
+			var extra; // = JSON.stringify({test:123,url:'https://github.com/nodemcu/nodemcu-firmware'});
 			var url = '/setwifi?wifi_ssid=' + encodeURIComponent($('#ssid').value) + '&wifi_password=' + encodeURIComponent($('#wifi_password').value);
-			url += (extra != null ? '&extra=' + encodeURIComponent(extra) : '');
+			if (extra != null)
+				url += '&extra=' + encodeURIComponent(extra);
 			clearTimeout(rs);
+			$('#st').innerText = "Submitting...";
 			fetch(url, 'GET', newSt, 2);
 			cur('#f3');
 		}

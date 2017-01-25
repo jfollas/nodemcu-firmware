@@ -683,11 +683,11 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
     int extra_field_len = LITLEN("extra=");
     char *extra_str_start = extra_str + extra_field_len;
     ENDUSER_SETUP_DEBUG(extra_str_start);
- //   int extra_str_len = enduser_setup_srch_str(extra_str_start, "& ");  
+    int extra_str_len = enduser_setup_srch_str(extra_str_start, "& ");  
 
- //   if (extra_str_len != -1)
-//    {
-//      ENDUSER_SETUP_DEBUG("WILL ALLOC");
+    if (extra_str_len != -1)
+    {
+      ENDUSER_SETUP_DEBUG("WILL ALLOC");
       //state->extra_data = (char *) os_zalloc(extra_str_len + 1);
       //if (state->extra_data == NULL)
       //{
@@ -695,7 +695,7 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
       //}
 
       //c_memcpy(&(state->extra_data), &(extra_str_start), extra_str_len);
- //   }
+    }
   }
 
   ENDUSER_SETUP_DEBUG("");

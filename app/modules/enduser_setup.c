@@ -687,10 +687,6 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
     char *extra_str_start = extra_str + extra_field_len;
     int extra_str_len = enduser_setup_srch_str(extra_str_start, "& ");  
 
-  char debuginfo[50];
-  c_sprintf(debuginfo, "extra len: %d", extra_str_len);
-  ENDUSER_SETUP_DEBUG(debuginfo);  
-
     if (extra_str_len != -1)
     {
       state->extra_data = (char *) os_zalloc(extra_str_len + 1);
@@ -699,6 +695,9 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
        return 2;
       }
       err = enduser_setup_http_urldecode(state->extra_data, extra_str_start, extra_str_len, sizeof(state->extra_data));      
+  char debuginfo[200];
+  c_sprintf(debuginfo, "extra len: %d, extra_data: %s", sizeof(state->extra_data), state->extra_data);
+  ENDUSER_SETUP_DEBUG(debuginfo);        
     }
   }
 

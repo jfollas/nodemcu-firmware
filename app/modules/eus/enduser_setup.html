@@ -204,7 +204,7 @@
 			rs = to(refr, 3);
 
 			if (s != 200) {
-				$('#st').innerText = 'Awaiting Status (' + s + ')';
+				$('#st').innerText = 'Awaiting Status (' + (s === -1 ? 'timed out' : s) + ')';
 			} else {
 				if (typeof d === 'string') {
 					d = JSON.parse(d);
@@ -242,8 +242,9 @@
 		}
 		function submit() {
 			submitted = true;
-			var extra = JSON.stringify({test:123,url:'https://github.com/nodemcu/nodemcu-firmware'});
-			var url = '/setwifi?wifi_ssid=' + encodeURIComponent($('#ssid').value) + '&wifi_password=' + encodeURIComponent($('#wifi_password').value) + '&extra=' + encodeURIComponent(extra);
+			//var extra = JSON.stringify({test:123,url:'https://github.com/nodemcu/nodemcu-firmware'});
+			var url = '/setwifi?wifi_ssid=' + encodeURIComponent($('#ssid').value) + '&wifi_password=' + encodeURIComponent($('#wifi_password').value);
+			url += (extra != null ? '&extra=' + encodeURIComponent(extra) : '');
 			clearTimeout(rs);
 			fetch(url, 'GET', newSt, 2);
 			cur('#f3');

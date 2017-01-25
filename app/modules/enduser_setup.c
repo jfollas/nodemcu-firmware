@@ -50,7 +50,7 @@
 #include "task/task.h"
 
 /* Set this to 1 to generate debug messages. Uses debug callback provided by Lua. Example: enduser_setup.start(successFn, print, print) */ 
-#define ENDUSER_SETUP_DEBUG_ENABLE 0
+#define ENDUSER_SETUP_DEBUG_ENABLE 1
 
 /* Set this to 1 to output the contents of HTTP requests when debugging. Useful if you need it, but can get pretty noisy */
 #define ENDUSER_SETUP_DEBUG_SHOW_HTTP_REQUEST 0
@@ -1066,7 +1066,7 @@ static void on_scan_done (void *arg, STATUS status)
     const size_t hdr_sz = sizeof (header_fmt) +1 -1; /* +expand %4d, -\0 */
 
     /* To be able to safely escape a pathological SSID, we need 2*32 bytes */
-    const size_t max_entry_sz = 27 + 2*32 + 6; /* {"ssid":"","rssi":,"chan":} */
+    const size_t max_entry_sz = 55 + 2*32 + 6; /* {"ssid":"","rssi":,"chan":,"bssid":"xx:xx:xx:xx:xx:xx"} */
     const size_t alloc_sz = hdr_sz + num_nets * max_entry_sz + 3;
     char *http = os_zalloc (alloc_sz);
     if (!http)
@@ -1101,6 +1101,12 @@ static void on_scan_done (void *arg, STATUS status)
       p += sizeof (entry_chan) -1;
 
       p += c_sprintf (p, "%d", wn->channel);    
+
+      const char entry_bssid[] = ",\"bssid\":"; 
+      strcpy (p, entry_bssid);
+      p += sizeof (entry_bssid) -1;
+
+      p += c_sprintf (p, "%02X:%02X:%02X:%02X:%02X:%02X", wn->bssid[0], wn->bssid[1], wn->bssid[2], wn->bssid[3], wn->bssid[4], wn->bssid[5]);  
 
       *p++ = '}';
     }

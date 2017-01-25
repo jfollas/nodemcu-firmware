@@ -687,13 +687,12 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
 
     if (extra_str_len != -1)
     {
-      ENDUSER_SETUP_DEBUG("WILL ALLOC");
-      //state->extra_data = (char *) os_zalloc(extra_str_len + 1);
-      //if (state->extra_data == NULL)
-      //{
-      //  return 2;
-      //}
-
+      state->extra_data = (char *) os_zalloc(extra_str_len + 1);
+      if (state->extra_data == NULL)
+      {
+       return 2;
+      }
+      ENDUSER_SETUP_DEBUG("DID ALLOC"); 
       //c_memcpy(&(state->extra_data), &(extra_str_start), extra_str_len);
     }
   }

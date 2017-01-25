@@ -208,7 +208,15 @@ static void enduser_setup_connected_callback()
   if (state != NULL && state->lua_connected_cb_ref != LUA_NOREF)
   {
     lua_rawgeti(L, LUA_REGISTRYINDEX, state->lua_connected_cb_ref);
-    lua_call(L, 0, 0);
+    if (state->extra_data != NULL)
+    {
+      lua_pushlstring(L, state->extra_data, c_strlen(state->extra_data));
+      lua_call(L, 1, 0);
+    } 
+    else
+    {
+      lua_call(L, 0, 0);
+    }
   }
 }
 

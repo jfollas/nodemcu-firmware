@@ -638,8 +638,9 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
   state->success = 0;
   state->lastStationStatus = 0;
   
-  char *name_str = (char *) ((uint32_t)strstr(&(data[6]), "wifi_ssid="));
-  char *pwd_str = (char *) ((uint32_t)strstr(&(data[6]), "wifi_password="));
+  char *name_str  = (char *) ((uint32_t)strstr(&(data[6]), "wifi_ssid="));
+  char *pwd_str   = (char *) ((uint32_t)strstr(&(data[6]), "wifi_password="));
+  char *extra_str = (char *) ((uint32_t)strstr(&(data[6]), "extra="));
 
   if (name_str == NULL || pwd_str == NULL)
   {
@@ -674,8 +675,8 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
   }
 
   // If Querystring contains an "extra" parameter, capture the value to pass out of the success callback
-  char *extra_str = (char *) ((uint32_t)strstr(&(data[6]), "extra="));
 
+ENDUSER_SETUP_DEBUG(extra_str);
   if (extra_str != NULL)
   {
     int extra_field_len = LITLEN("extra=");
@@ -684,13 +685,14 @@ static int enduser_setup_http_handle_credentials(char *data, unsigned short data
 
     if (extra_str_len != -1)
     {
-      state->extra_data = (char *) os_zalloc(extra_str_len + 1);
-      if (state->extra_data == NULL)
-      {
-        return 2;
-      }
+      ENDUSER_SETUP_DEBUG("WILL ALLOC");
+      //state->extra_data = (char *) os_zalloc(extra_str_len + 1);
+      //if (state->extra_data == NULL)
+      //{
+      //  return 2;
+      //}
 
-      c_memcpy(&(state->extra_data), &(extra_str_start), extra_str_len);
+      //c_memcpy(&(state->extra_data), &(extra_str_start), extra_str_len);
     }
   }
 

@@ -1406,7 +1406,8 @@ static void enduser_setup_ap_start(void)
 
   struct softap_config cnf;
   c_memset(&(cnf), 0, sizeof(struct softap_config));
-
+  wifi_softap_get_config(&cnf);
+  
 #ifndef ENDUSER_SETUP_AP_SSID
   #define ENDUSER_SETUP_AP_SSID "SetupGadget"
 #endif

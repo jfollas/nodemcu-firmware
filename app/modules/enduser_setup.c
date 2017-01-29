@@ -1759,13 +1759,13 @@ static int enduser_setup_ssid(lua_State *L)
   
   if (myssid != NULL) 
   {
-    lua_pushlstring(L, myssid, c_strlen(myssid))
+    lua_pushlstring(L, myssid, c_strlen(myssid));
   } 
   else
   {
     lua_pushnil(L);
   }
-  
+
   return 1;
 }
 

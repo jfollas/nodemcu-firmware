@@ -134,11 +134,14 @@ typedef struct
 static enduser_setup_state_t *state;
 
 static bool manual = false;
+static const char *myssid;
+
 static task_handle_t do_station_cfg_handle;
 
 static int enduser_setup_manual(lua_State* L);
 static int enduser_setup_start(lua_State* L);
 static int enduser_setup_stop(lua_State* L);
+static int enduser_setup_setssid(lua_State* L);
 static void enduser_setup_stop_callback(void *ptr);
 static void enduser_setup_station_start(void);
 static void enduser_setup_ap_start(void);
@@ -1427,7 +1430,7 @@ static void enduser_setup_ap_start(void)
   cnf.max_connection = 5;
   cnf.beacon_interval = 100;
   wifi_set_opmode(STATIONAP_MODE);
-  wifi_softap_set_config(&cnf);
+  wifi_softap_set_config_current(&cnf);
 
 #if ENDUSER_SETUP_DEBUG_ENABLE  
   char debuginfo[100];
@@ -1746,6 +1749,25 @@ static int enduser_setup_manual(lua_State *L)
   return 1;
 }
 
+static int enduser_setup_ssid(lua_State *L)
+{
+  if (!lua_isnoneornil (L, 1))
+  {  
+    size_t ssid_len;
+    myssid = luaL_checklstring(L, 1, &ssid_len);
+  }
+  
+  if (myssid != NULL) 
+  {
+    lua_pushlstring(L, myssid, c_strlen(myssid))
+  } 
+  else
+  {
+    lua_pushnil(L);
+  }
+  
+  return 1;
+}
 
 static int enduser_setup_start(lua_State *L)
 {
@@ -1826,7 +1848,8 @@ static int enduser_setup_stop(lua_State* L)
 static const LUA_REG_TYPE enduser_setup_map[] = {
   { LSTRKEY( "manual" ), LFUNCVAL( enduser_setup_manual )},
   { LSTRKEY( "start" ), LFUNCVAL( enduser_setup_start )},
-  { LSTRKEY( "stop" ),  LFUNCVAL( enduser_setup_stop  )},
+  { LSTRKEY( "stop" ), LFUNCVAL( enduser_setup_stop )},
+  { LSTRKEY( "ssid" ), LFUNCVAL( enduser_setup_ssid )}
   { LNILKEY, LNILVAL}
 };
 

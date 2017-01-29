@@ -1428,9 +1428,15 @@ static void enduser_setup_ap_start(void)
     cnf.ssid_hidden = 0;
     cnf.max_connection = 5;
     cnf.beacon_interval = 100;
-    wifi_set_opmode(STATIONAP_MODE);
-    wifi_softap_set_config(&cnf);
   }
+  else
+  {
+    cnf.channel = state->softAPchannel;
+  }
+  
+  wifi_set_opmode(SOFTAP_MODE);
+  wifi_softap_set_config(&cnf);
+  
 #if ENDUSER_SETUP_DEBUG_ENABLE  
   char debuginfo[100];
   c_sprintf(debuginfo, "SSID: %s, CHAN: %d", cnf.ssid, cnf.channel);
@@ -1704,6 +1710,13 @@ static int enduser_setup_init(lua_State *L)
       state->connecting = 0;    
       state->shuttingDown = 0;
     }
+  }
+
+  if (manual) 
+  {
+    struct softap_config cnf;
+    wifi_softap_get_config(&cnf);
+    state->softAPchannel = cnf.channel;
   }
 
   if (!lua_isnoneornil(L, 1))

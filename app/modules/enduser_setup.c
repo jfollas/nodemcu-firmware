@@ -1402,8 +1402,6 @@ static void enduser_setup_ap_stop(void)
 
 static void enduser_setup_ap_start(void)
 {
-static void enduser_setup_ap_start(void)
-{
   ENDUSER_SETUP_DEBUG("enduser_setup_ap_start");
 
   struct softap_config cnf;

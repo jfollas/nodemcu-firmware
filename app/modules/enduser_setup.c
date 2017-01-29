@@ -1409,8 +1409,8 @@ static void enduser_setup_ap_start(void)
 #endif
   
   struct softap_config cnf;
-  wifi_set_opmode(SOFTAP_MODE);
-  
+  wifi_set_opmode(STATIONAP_MODE);
+
   if (!manual)
   {
     c_memset(&(cnf), 0, sizeof(struct softap_config));

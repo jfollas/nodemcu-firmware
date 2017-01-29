@@ -227,6 +227,8 @@ static void enduser_setup_check_station_start(void)
 
   os_timer_setfn(&(state->check_station_timer), enduser_setup_check_station, NULL);
   os_timer_arm(&(state->check_station_timer), 3*1000, TRUE);
+
+  ENDUSER_SETUP_DEBUG("DONE: enduser_setup_check_station_start");
 }
 
 

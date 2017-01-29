@@ -1849,7 +1849,7 @@ static const LUA_REG_TYPE enduser_setup_map[] = {
   { LSTRKEY( "manual" ), LFUNCVAL( enduser_setup_manual )},
   { LSTRKEY( "start" ), LFUNCVAL( enduser_setup_start )},
   { LSTRKEY( "stop" ), LFUNCVAL( enduser_setup_stop )},
-  { LSTRKEY( "ssid" ), LFUNCVAL( enduser_setup_ssid )}
+  { LSTRKEY( "ssid" ), LFUNCVAL( enduser_setup_ssid )},
   { LNILKEY, LNILVAL}
 };
 

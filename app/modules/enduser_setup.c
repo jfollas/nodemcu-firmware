@@ -227,8 +227,6 @@ static void enduser_setup_check_station_start(void)
 
   os_timer_setfn(&(state->check_station_timer), enduser_setup_check_station, NULL);
   os_timer_arm(&(state->check_station_timer), 3*1000, TRUE);
-
-  ENDUSER_SETUP_DEBUG("DONE: enduser_setup_check_station_start");
 }
 
 
@@ -1406,15 +1404,16 @@ static void enduser_setup_ap_start(void)
 {
   ENDUSER_SETUP_DEBUG("enduser_setup_ap_start");
 
-  struct softap_config cnf;
-  c_memset(&(cnf), 0, sizeof(struct softap_config));
-  wifi_softap_get_config(&cnf);
-
-  if (!manual)
-  {
 #ifndef ENDUSER_SETUP_AP_SSID
   #define ENDUSER_SETUP_AP_SSID "SetupGadget"
 #endif
+  
+  struct softap_config cnf;
+  wifi_set_opmode(SOFTAP_MODE);
+  
+  if (!manual)
+  {
+    c_memset(&(cnf), 0, sizeof(struct softap_config));
 
     char ssid[] = ENDUSER_SETUP_AP_SSID;
     int ssid_name_len = c_strlen(ssid);
@@ -1433,10 +1432,11 @@ static void enduser_setup_ap_start(void)
   }
   else
   {
+    struct softap_config cnf;    
+    wifi_softap_get_config(&cnf);    
     cnf.channel = state->softAPchannel;
   }
   
-  wifi_set_opmode(SOFTAP_MODE);
   wifi_softap_set_config(&cnf);
   
 #if ENDUSER_SETUP_DEBUG_ENABLE  

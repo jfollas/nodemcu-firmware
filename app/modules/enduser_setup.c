@@ -1420,6 +1420,7 @@ static void enduser_setup_ap_start(void)
   }
   else
   {
+    c_memset(&(cnf), 0, sizeof(struct softap_config));    
     char ssid[] = ENDUSER_SETUP_AP_SSID;
     int ssid_name_len = c_strlen(ssid);
     c_memcpy(&(cnf.ssid), ssid, ssid_name_len);

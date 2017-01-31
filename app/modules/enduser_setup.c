@@ -1407,6 +1407,10 @@ static void enduser_setup_ap_start(void)
 #ifndef ENDUSER_SETUP_AP_SSID
   #define ENDUSER_SETUP_AP_SSID "SetupGadget"
 #endif
+
+#if ENDUSER_SETUP_DEBUG_ENABLE  
+  char debuginfo[100];
+#endif
   
   struct softap_config cnf;
   wifi_set_opmode(STATIONAP_MODE);
@@ -1433,14 +1437,21 @@ static void enduser_setup_ap_start(void)
   else
   {
     struct softap_config cnf;    
-    wifi_softap_get_config(&cnf);    
+    wifi_softap_get_config(&cnf);   
+#if ENDUSER_SETUP_DEBUG_ENABLE       
+    c_sprintf(debuginfo, "Manual Mode AP: Current CHAN: %d", cnf.channel);
+    ENDUSER_SETUP_DEBUG(debuginfo);     
+#endif    
     cnf.channel = state->softAPchannel;
+#if ENDUSER_SETUP_DEBUG_ENABLE       
+    c_sprintf(debuginfo, "Manual Mode AP: Setting CHAN: %d", cnf.channel);
+    ENDUSER_SETUP_DEBUG(debuginfo);     
+#endif      
   }
   
   wifi_softap_set_config(&cnf);
   
 #if ENDUSER_SETUP_DEBUG_ENABLE  
-  char debuginfo[100];
   c_sprintf(debuginfo, "SSID: %s, CHAN: %d", cnf.ssid, cnf.channel);
   ENDUSER_SETUP_DEBUG(debuginfo);  
 #endif  

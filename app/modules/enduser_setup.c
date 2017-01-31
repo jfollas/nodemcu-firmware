@@ -1806,7 +1806,8 @@ static int enduser_setup_start(lua_State *L)
   }
   else
   {
-   enduser_setup_check_station_start();
+    enduser_setup_ap_start();
+    enduser_setup_check_station_start();
   }
 
   if(enduser_setup_dns_start())

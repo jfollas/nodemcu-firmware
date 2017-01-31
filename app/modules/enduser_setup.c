@@ -1468,7 +1468,7 @@ static void enduser_setup_ap_start(void)
 #endif      
   }
 
-  task_post_medium(do_start_ap_handle), (task_param_t) cnf);  
+  task_post_medium(do_start_ap_handle, (task_param_t) cnf);  
 }
 
 static void on_initial_scan_done (void *arg, STATUS status)

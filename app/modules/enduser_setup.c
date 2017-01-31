@@ -1429,7 +1429,7 @@ static void enduser_setup_ap_start(void)
   char debuginfo[100];
 #endif
   
-  struct softap_config cnf = luaM_malloc(lua_getstate(), sizeof(struct softap_config));
+  struct softap_config *cnf = luaM_malloc(lua_getstate(), sizeof(struct softap_config));
 
   if (!manual)
   {

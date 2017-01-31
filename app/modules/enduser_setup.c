@@ -1433,37 +1433,37 @@ static void enduser_setup_ap_start(void)
 
   if (!manual)
   {
-    c_memset(&(cnf), 0, sizeof(struct softap_config));
+    c_memset(cnf, 0, sizeof(struct softap_config));
 
     char ssid[] = ENDUSER_SETUP_AP_SSID;
     int ssid_name_len = c_strlen(ssid);
-    c_memcpy(&(cnf.ssid), ssid, ssid_name_len);
+    c_memcpy(cnf->ssid, ssid, ssid_name_len);
 
     uint8_t mac[6];
     wifi_get_macaddr(SOFTAP_IF, mac);
-    cnf.ssid[ssid_name_len] = '_';
-    c_sprintf(cnf.ssid + ssid_name_len + 1, "%02X%02X%02X", mac[3], mac[4], mac[5]);
-    cnf.ssid_len = ssid_name_len + 7;
+    cnf->ssid[ssid_name_len] = '_';
+    c_sprintf(cnf->ssid + ssid_name_len + 1, "%02X%02X%02X", mac[3], mac[4], mac[5]);
+    cnf->ssid_len = ssid_name_len + 7;
     
-    cnf.channel = state == NULL? 1 : state->softAPchannel;
-    cnf.authmode = AUTH_OPEN;
-    cnf.ssid_hidden = 0;
-    cnf.max_connection = 5;
-    cnf.beacon_interval = 100;
+    cnf->channel = state == NULL? 1 : state->softAPchannel;
+    cnf->authmode = AUTH_OPEN;
+    cnf->ssid_hidden = 0;
+    cnf->max_connection = 5;
+    cnf->beacon_interval = 100;
   }
   else
   {
-    wifi_softap_get_config(&cnf);   
+    wifi_softap_get_config(cnf);   
 
 #if ENDUSER_SETUP_DEBUG_ENABLE       
-    c_sprintf(debuginfo, "Manual Mode AP: Current CHAN: %d", cnf.channel);
+    c_sprintf(debuginfo, "Manual Mode AP: Current CHAN: %d", cnf->channel);
     ENDUSER_SETUP_DEBUG(debuginfo);     
 #endif    
 
-    cnf.channel = state->softAPchannel;
+    cnf->channel = state->softAPchannel;
 
 #if ENDUSER_SETUP_DEBUG_ENABLE       
-    c_sprintf(debuginfo, "Manual Mode AP: Setting CHAN: %d", cnf.channel);
+    c_sprintf(debuginfo, "Manual Mode AP: Setting CHAN: %d", cnf->channel);
     ENDUSER_SETUP_DEBUG(debuginfo);     
 #endif      
   }

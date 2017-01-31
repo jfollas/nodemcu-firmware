@@ -207,7 +207,7 @@
 				if (s == 0) {
 					$('#st').innerText = 'Not Responding';
 				} else if (s == 404) {
-					$('#st').innerText = 'Wi-Fi Connection Changed';
+					$('#st').innerHTML = 'Network Changed';
 				} else {
 					$('#st').innerText = 'Status: ' + (s === -1 ? 'timed out' : s);
 				}

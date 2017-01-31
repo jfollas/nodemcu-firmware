@@ -134,6 +134,7 @@ typedef struct
 static enduser_setup_state_t *state;
 static bool manual = false;
 static task_handle_t do_station_cfg_handle;
+static task_handle_t do_start_ap_handle;
 
 static int enduser_setup_manual(lua_State* L);
 static int enduser_setup_start(lua_State* L);
@@ -632,6 +633,22 @@ static void do_station_cfg (task_param_t param, uint8_t prio)
   luaM_free(lua_getstate(), cnf);
 }
 
+static void do_start_ap (task_param_t param, uint8_t prio)
+{
+  ENDUSER_SETUP_DEBUG("do_start_ap_handle");
+
+  struct softap_config *cnf = (struct softap_config *)param;
+  (void)prio;  
+
+  wifi_set_opmode(SOFTAP_MODE); 
+  wifi_softap_set_config(&cnf);
+
+#if ENDUSER_SETUP_DEBUG_ENABLE  
+  char debuginfo[100];
+  c_sprintf(debuginfo, "SSID: %s, CHAN: %d", cnf.ssid, cnf.channel);
+  ENDUSER_SETUP_DEBUG(debuginfo);  
+#endif  
+}
 
 /**
  * Handle HTTP Credentials
@@ -1412,10 +1429,8 @@ static void enduser_setup_ap_start(void)
   char debuginfo[100];
 #endif
   
-  struct softap_config cnf;
-  wifi_set_opmode(NULL_MODE);
-  wifi_set_opmode(STATIONAP_MODE); // Need Station until scan properly shuts down
-  
+  struct softap_config cnf = luaM_malloc(lua_getstate(), sizeof(struct softap_config));
+
   if (!manual)
   {
     c_memset(&(cnf), 0, sizeof(struct softap_config));
@@ -1438,25 +1453,22 @@ static void enduser_setup_ap_start(void)
   }
   else
   {
-    struct softap_config cnf;    
     wifi_softap_get_config(&cnf);   
+
 #if ENDUSER_SETUP_DEBUG_ENABLE       
     c_sprintf(debuginfo, "Manual Mode AP: Current CHAN: %d", cnf.channel);
     ENDUSER_SETUP_DEBUG(debuginfo);     
 #endif    
+
     cnf.channel = state->softAPchannel;
+
 #if ENDUSER_SETUP_DEBUG_ENABLE       
     c_sprintf(debuginfo, "Manual Mode AP: Setting CHAN: %d", cnf.channel);
     ENDUSER_SETUP_DEBUG(debuginfo);     
 #endif      
   }
 
-  wifi_softap_set_config(&cnf);
-  
-#if ENDUSER_SETUP_DEBUG_ENABLE  
-  c_sprintf(debuginfo, "SSID: %s, CHAN: %d", cnf.ssid, cnf.channel);
-  ENDUSER_SETUP_DEBUG(debuginfo);  
-#endif  
+  task_post_medium(do_start_ap_handle), (task_param_t) cnf);  
 }
 
 static void on_initial_scan_done (void *arg, STATUS status)
@@ -1785,6 +1797,11 @@ static int enduser_setup_start(lua_State *L)
   if (!do_station_cfg_handle)
   {
     do_station_cfg_handle = task_get_id(do_station_cfg);
+  }
+
+  if (!do_start_ap_handle)
+  {
+    do_start_ap_handle = task_get_id(do_start_ap);
   }
 
   if(enduser_setup_init(L))

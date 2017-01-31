@@ -251,6 +251,8 @@ static void enduser_setup_check_station(void *p)
 {
   ENDUSER_SETUP_DEBUG("enduser_setup_check_station");
 
+  wifi_set_opmode(STATIONAP_MODE);
+
   (void)p;
   struct ip_info ip;
   c_memset(&ip, 0, sizeof(struct ip_info));

@@ -204,7 +204,13 @@
 			rs = to(refr, 3);
 
 			if (s != 200) {
-				$('#st').innerText = 'Awaiting Status (' + (s === -1 ? 'timed out' : s) + ')';
+				if (s == 0) {
+					$('#st').innerText = 'Not Responding';
+				} else if (s == 404) {
+					$('#st').innerText = 'Wi-Fi Connection Changed';
+				} else {
+					$('#st').innerText = 'Status: ' + (s === -1 ? 'timed out' : s);
+				}
 			} else {
 				if (typeof d === 'string') {
 					d = JSON.parse(d);

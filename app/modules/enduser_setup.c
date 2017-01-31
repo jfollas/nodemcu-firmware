@@ -1428,6 +1428,7 @@ static void enduser_setup_ap_start(void)
     cnf.ssid[ssid_name_len] = '_';
     c_sprintf(cnf.ssid + ssid_name_len + 1, "%02X%02X%02X", mac[3], mac[4], mac[5]);
     cnf.ssid_len = ssid_name_len + 7;
+    
     cnf.channel = state == NULL? 1 : state->softAPchannel;
     cnf.authmode = AUTH_OPEN;
     cnf.ssid_hidden = 0;

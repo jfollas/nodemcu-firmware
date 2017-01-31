@@ -250,13 +250,14 @@ static void enduser_setup_check_station_stop(void)
 static void enduser_setup_check_station(void *p)
 {
   ENDUSER_SETUP_DEBUG("enduser_setup_check_station");
-
+  ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(STATIONAP)");
   wifi_set_opmode(STATIONAP_MODE);
 
   (void)p;
   struct ip_info ip;
   c_memset(&ip, 0, sizeof(struct ip_info));
 
+  ENDUSER_SETUP_DEBUG("-> wifi_get_ip_info");
   wifi_get_ip_info(STATION_IF, &ip);
 
   int i;
@@ -266,11 +267,13 @@ static void enduser_setup_check_station(void *p)
     has_ip |= ((char *) &ip)[i];
   }
 
+  ENDUSER_SETUP_DEBUG("-> wifi_get_channel");
   uint8_t currChan = wifi_get_channel();
   
   if (has_ip == 0)
   {
     /* No IP Address yet, so check the reported status */ 
+    ENDUSER_SETUP_DEBUG("-> wifi_station_get_connect_status");    
     uint8_t curr_status = wifi_station_get_connect_status();
     char buf[20];
     c_sprintf(buf, "status=%d,chan=%d", curr_status, currChan);
@@ -289,7 +292,9 @@ static void enduser_setup_check_station(void *p)
       
         ENDUSER_SETUP_DEBUG("Turning off Station due to different channel than AP");
       
+        ENDUSER_SETUP_DEBUG("-> wifi_station_disconnect");      
         wifi_station_disconnect();
+        ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(SOFTAP)");        
         wifi_set_opmode(SOFTAP_MODE);
         enduser_setup_ap_start();
       }
@@ -316,7 +321,9 @@ static void enduser_setup_check_station(void *p)
   else
   {
     ENDUSER_SETUP_DEBUG("Turning off Station due to different channel than AP");
+    ENDUSER_SETUP_DEBUG("-> wifi_station_disconnect");    
     wifi_station_disconnect();
+    ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(SOFTAP)");    
     wifi_set_opmode(SOFTAP_MODE);
     enduser_setup_ap_start();
   }
@@ -629,8 +636,11 @@ static void do_station_cfg (task_param_t param, uint8_t prio)
    * TODO: maybe use an error callback to at least report if the set config
    * call fails.
    */
+  ENDUSER_SETUP_DEBUG("-> wifi_station_disconnect");
   wifi_station_disconnect ();
+  ENDUSER_SETUP_DEBUG("-> wifi_station_set_config");  
   wifi_station_set_config (cnf);
+  ENDUSER_SETUP_DEBUG("-> wifi_station_connect");  
   wifi_station_connect ();
   luaM_free(lua_getstate(), cnf);
 }
@@ -645,8 +655,11 @@ static void do_start_ap (task_param_t param, uint8_t prio)
   cnf->channel = state->softAPchannel;
   cnf->beacon_interval = 1024;
 
+  ENDUSER_SETUP_DEBUG("-> wifi_station_disconnect");
   wifi_station_disconnect();
+  ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(SOFTAP)");
   wifi_set_opmode(SOFTAP_MODE); 
+  ENDUSER_SETUP_DEBUG("-> wifi_softap_set_config");  
   wifi_softap_set_config(cnf);
 
 #if ENDUSER_SETUP_DEBUG_ENABLE  
@@ -870,6 +883,7 @@ static void enduser_setup_serve_status(struct tcp_pcb *conn)
   };
 
   const size_t num_states = sizeof(states)/sizeof(states[0]);
+  ENDUSER_SETUP_DEBUG("-> wifi_station_get_connect_status");  
   uint8_t curr_state = state->lastStationStatus > 0 ? state->lastStationStatus : wifi_station_get_connect_status ();  
   if (curr_state < num_states)
   {
@@ -882,11 +896,12 @@ static void enduser_setup_serve_status(struct tcp_pcb *conn)
       {
         const char *s = states[curr_state];
         struct station_config config;
+        ENDUSER_SETUP_DEBUG("-> wifi_station_get_config");        
         wifi_station_get_config(&config);
         config.ssid[31] = '\0';
 
         struct ip_info ip_info;
-
+        ENDUSER_SETUP_DEBUG("-> wifi_get_ip_info");
         wifi_get_ip_info(STATION_IF , &ip_info);
 
         char ip_addr[16];
@@ -947,6 +962,7 @@ static void enduser_setup_serve_status_as_json (struct tcp_pcb *http_client)
   ENDUSER_SETUP_DEBUG("enduser_setup_serve_status_as_json");
   
   /* If the station is currently shut down because of wi-fi channel issue, use the cached status */
+  ENDUSER_SETUP_DEBUG("-> wifi_station_get_connect_status");  
   uint8_t curr_status = state->lastStationStatus > 0 ? state->lastStationStatus : wifi_station_get_connect_status ();  
 
   char json_payload[64];
@@ -1260,6 +1276,7 @@ static err_t enduser_setup_http_recvcb(void *arg, struct tcp_pcb *http_client, s
 
         if (!already)
         {
+          ENDUSER_SETUP_DEBUG("-> wifi_station_scan");
           if (!wifi_station_scan(NULL, on_scan_done))
           {
             enduser_setup_http_serve_header(http_client, http_header_500, LITLEN(http_header_500));
@@ -1421,6 +1438,7 @@ static void enduser_setup_ap_stop(void)
 {
   ENDUSER_SETUP_DEBUG("enduser_setup_ap_stop");
 
+  ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(~SOFTAP)");
   wifi_set_opmode(~SOFTAP_MODE & wifi_get_opmode());
 }
 
@@ -1444,6 +1462,7 @@ static void enduser_setup_ap_start(void)
     c_memcpy(cnf->ssid, ssid, ssid_name_len);
 
     uint8_t mac[6];
+    ENDUSER_SETUP_DEBUG("-> wifi_get_macaddr");    
     wifi_get_macaddr(SOFTAP_IF, mac);
     cnf->ssid[ssid_name_len] = '_';
     c_sprintf(cnf->ssid + ssid_name_len + 1, "%02X%02X%02X", mac[3], mac[4], mac[5]);
@@ -1455,6 +1474,7 @@ static void enduser_setup_ap_start(void)
   }
   else
   {
+    ENDUSER_SETUP_DEBUG("-> wifi_softap_get_config");    
     wifi_softap_get_config(cnf);
     //wifi_set_channel(state->softAPchannel);  
   }
@@ -1533,6 +1553,7 @@ static void enduser_setup_dns_recv_callback(void *arg, char *recv_data, unsigned
   }
 #endif
 
+  ENDUSER_SETUP_DEBUG("-> wifi_get_opmode");
   uint8_t if_mode = wifi_get_opmode();
   if ((if_mode & SOFTAP_MODE) == 0)
   {
@@ -1540,6 +1561,7 @@ static void enduser_setup_dns_recv_callback(void *arg, char *recv_data, unsigned
   }
 
   uint8_t if_index = (if_mode == STATION_MODE? STATION_IF : SOFTAP_IF);
+  ENDUSER_SETUP_DEBUG("-> wifi_get_ip_info");
   if (wifi_get_ip_info(if_index , &ip_info) == false)
   {
     ENDUSER_SETUP_ERROR_VOID("dns_recv_callback failed. Unable to get interface IP.", ENDUSER_SETUP_ERR_UNKOWN_ERROR, ENDUSER_SETUP_ERR_FATAL);
@@ -1733,6 +1755,7 @@ static int enduser_setup_init(lua_State *L)
   if (manual) 
   {
     struct softap_config cnf;
+    ENDUSER_SETUP_DEBUG("-> wifi_softap_get_config");    
     wifi_softap_get_config(&cnf);
     state->softAPchannel = cnf.channel;
   }
@@ -1803,7 +1826,9 @@ static int enduser_setup_start(lua_State *L)
   if (!manual)
   {
     ENDUSER_SETUP_DEBUG("Performing AP Scan to identify likely AP's channel. Enabling Station if it wasn't already.");    
+    ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(+STATION)");    
     wifi_set_opmode(STATION_MODE | wifi_get_opmode());
+    ENDUSER_SETUP_DEBUG("-> wifi_station_scan");    
     wifi_station_scan(NULL, on_initial_scan_done);
   }
   else
@@ -1850,7 +1875,9 @@ static int enduser_setup_stop(lua_State* L)
   }
   if (state != NULL && state->success && !state->callbackDone)
   {
+    ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(+STATION)");    
     wifi_set_opmode(STATION_MODE | wifi_get_opmode());
+    ENDUSER_SETUP_DEBUG("-> wifi_station_connect");    
     wifi_station_connect();
     enduser_setup_connected_callback();
   }  

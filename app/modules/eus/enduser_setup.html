@@ -201,7 +201,7 @@
 		}
 		function newSt(s, d) {
 			clearTimeout(rs);
-			rs = to(refr, 3);
+			rs = to(refr, 5);
 
 			if (s != 200) {
 				if (s == 0) {
@@ -248,7 +248,7 @@
 		}
 		function submit() {
 			submitted = true;
-			var extra; // = JSON.stringify({test:123,url:'https://github.com/nodemcu/nodemcu-firmware'});
+			var extra = JSON.stringify({ ts: Date.now() / 1000 | 0 });
 			var url = '/setwifi?wifi_ssid=' + encodeURIComponent($('#ssid').value) + '&wifi_password=' + encodeURIComponent($('#wifi_password').value);
 			if (extra != null)
 				url += '&extra=' + encodeURIComponent(extra);
@@ -301,7 +301,7 @@
 				ab.onclick = togAp;
 			} else {
 				ab.innerText = 'No networks found (' + s + ')';
-				ra = to(refrAp, 5);
+				//ra = to(refrAp, 5);
 			}
 		}
 		function signal(r) {
@@ -337,7 +337,7 @@
 			$('#bk2').onclick = function () {
 				cur('#f1')
 			}
-			rs = to(refr, 0.5);
+			rs = to(refr, 2);
 		}
 	</script>
 </body>

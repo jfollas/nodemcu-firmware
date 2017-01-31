@@ -640,6 +640,9 @@ static void do_start_ap (task_param_t param, uint8_t prio)
   struct softap_config *cnf = (struct softap_config *)param;
   (void)prio;  
 
+  cnf->channel = state->softAPchannel;
+
+  wifi_station_disconnect();
   wifi_set_opmode(SOFTAP_MODE); 
   wifi_softap_set_config(cnf);
 
@@ -648,6 +651,8 @@ static void do_start_ap (task_param_t param, uint8_t prio)
   c_sprintf(debuginfo, "SSID: %s, CHAN: %d", cnf->ssid, cnf->channel);
   ENDUSER_SETUP_DEBUG(debuginfo);  
 #endif  
+
+  luaM_free(lua_getstate(), cnf);
 }
 
 /**
@@ -1424,10 +1429,6 @@ static void enduser_setup_ap_start(void)
 #ifndef ENDUSER_SETUP_AP_SSID
   #define ENDUSER_SETUP_AP_SSID "SetupGadget"
 #endif
-
-#if ENDUSER_SETUP_DEBUG_ENABLE  
-  char debuginfo[100];
-#endif
   
   struct softap_config *cnf = luaM_malloc(lua_getstate(), sizeof(struct softap_config));
 
@@ -1445,30 +1446,17 @@ static void enduser_setup_ap_start(void)
     c_sprintf(cnf->ssid + ssid_name_len + 1, "%02X%02X%02X", mac[3], mac[4], mac[5]);
     cnf->ssid_len = ssid_name_len + 7;
     
-    cnf->channel = state == NULL? 1 : state->softAPchannel;
     cnf->authmode = AUTH_OPEN;
     cnf->ssid_hidden = 0;
     cnf->max_connection = 5;
     cnf->beacon_interval = 100;
+
+    task_post_medium(do_start_ap_handle, (task_param_t) cnf);     
   }
   else
   {
-    wifi_softap_get_config(cnf);   
-
-#if ENDUSER_SETUP_DEBUG_ENABLE       
-    c_sprintf(debuginfo, "Manual Mode AP: Current CHAN: %d", cnf->channel);
-    ENDUSER_SETUP_DEBUG(debuginfo);     
-#endif    
-
-    cnf->channel = state->softAPchannel;
-
-#if ENDUSER_SETUP_DEBUG_ENABLE       
-    c_sprintf(debuginfo, "Manual Mode AP: Setting CHAN: %d", cnf->channel);
-    ENDUSER_SETUP_DEBUG(debuginfo);     
-#endif      
+    wifi_set_channel(state->softAPchannel);  
   }
-
-  task_post_medium(do_start_ap_handle, (task_param_t) cnf);  
 }
 
 static void on_initial_scan_done (void *arg, STATUS status)

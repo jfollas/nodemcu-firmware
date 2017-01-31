@@ -207,7 +207,7 @@
 				if (s == 0) {
 					$('#st').innerText = 'Waiting for a response...';
 				} else if (s == 404) {
-					$('#st').innerHTML = 'Network Changed. You may need to<br/>reconnect to the device\'s Access Point.';
+					$('#st').innerHTML = 'Network Changed. You may need to<br/>manually reconnect to the device.';
 				} else {
 					$('#st').innerText = 'Unexpected Status: ' + (s === -1 ? 'timed out' : s);
 				}

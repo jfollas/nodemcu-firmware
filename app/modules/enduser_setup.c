@@ -641,6 +641,7 @@ static void do_start_ap (task_param_t param, uint8_t prio)
   (void)prio;  
 
   cnf->channel = state->softAPchannel;
+  cnf->beacon_interval = 1024;
 
   wifi_station_disconnect();
   wifi_set_opmode(SOFTAP_MODE); 
@@ -1449,14 +1450,14 @@ static void enduser_setup_ap_start(void)
     cnf->authmode = AUTH_OPEN;
     cnf->ssid_hidden = 0;
     cnf->max_connection = 5;
-    cnf->beacon_interval = 100;
-
-    task_post_medium(do_start_ap_handle, (task_param_t) cnf);     
   }
   else
   {
-    wifi_set_channel(state->softAPchannel);  
+    wifi_softap_getconfig(cnf);
+    //wifi_set_channel(state->softAPchannel);  
   }
+
+  task_post_medium(do_start_ap_handle, (task_param_t) cnf);     
 }
 
 static void on_initial_scan_done (void *arg, STATUS status)

@@ -1413,8 +1413,9 @@ static void enduser_setup_ap_start(void)
 #endif
   
   struct softap_config cnf;
-  wifi_set_opmode(STATIONAP_MODE);
-
+  wifi_set_opmode(NULL_MODE);
+  wifi_set_opmode(STATIONAP_MODE); // Need Station until scan properly shuts down
+  
   if (!manual)
   {
     c_memset(&(cnf), 0, sizeof(struct softap_config));
@@ -1449,7 +1450,7 @@ static void enduser_setup_ap_start(void)
     ENDUSER_SETUP_DEBUG(debuginfo);     
 #endif      
   }
-  
+
   wifi_softap_set_config(&cnf);
   
 #if ENDUSER_SETUP_DEBUG_ENABLE  

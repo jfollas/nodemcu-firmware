@@ -1453,7 +1453,7 @@ static void enduser_setup_ap_start(void)
   }
   else
   {
-    wifi_softap_getconfig(cnf);
+    wifi_softap_get_config(cnf);
     //wifi_set_channel(state->softAPchannel);  
   }
 

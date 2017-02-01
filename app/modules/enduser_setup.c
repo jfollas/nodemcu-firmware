@@ -665,12 +665,12 @@ static void do_start_ap (task_param_t param, uint8_t prio)
   wifi_softap_set_config(cnf);
 
 #if ENDUSER_SETUP_DEBUG_ENABLE  
-    struct softap_config vcnf;
-    ENDUSER_SETUP_DEBUG("-> wifi_softap_get_config");    
-    wifi_softap_get_config(&vcnf);
+  struct softap_config vcnf;
+  ENDUSER_SETUP_DEBUG("-> wifi_softap_get_config");    
+  wifi_softap_get_config(&vcnf);
 
   char debuginfo[100];
-  c_sprintf(debuginfo, "SSID: %s, CHAN: %d", vcnf->ssid, vcnf->channel);
+  c_sprintf(debuginfo, "SSID: %s, CHAN: %d", vcnf.ssid, vcnf.channel);
   ENDUSER_SETUP_DEBUG(debuginfo);  
 #endif  
 

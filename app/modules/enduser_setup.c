@@ -654,7 +654,7 @@ static void do_start_ap (task_param_t param, uint8_t prio)
   (void)prio;  
 
   cnf->channel = state->softAPchannel;
-  cnf->beacon_interval = 15360;
+  cnf->beacon_interval = 1024;
 
   ENDUSER_SETUP_DEBUG("-> wifi_station_disconnect");
   wifi_station_disconnect();
@@ -796,7 +796,7 @@ static int enduser_setup_http_serve_302(struct tcp_pcb *http_client)
     "HTTP/1.1 302 Moved\r\n"
     "Connection:close\r\n"
     "Access-Control-Allow-Origin: *\r\n"  
-    "Location:http://%s/\r\n"
+    "Location:http://%s/configure/\r\n"
     "\r\n\0";
 
   int header_len = c_strlen(fmt) + c_strlen(state->softAPipaddr) - 2; // 2=token %s
@@ -831,8 +831,7 @@ static int enduser_setup_check_host_header(char *data, unsigned short data_len)
     host_str++;
   }
 
-  if (strstr(host_str, state->softAPipaddr) != host_str) 
-  {
+  if (c_strncmp(host_str, state->softAPipaddr, c_strlen(state->softAPipaddr)) != 0)
     ENDUSER_SETUP_DEBUG("Different Host Found");    
     return 2;
   }
@@ -1296,6 +1295,11 @@ static err_t enduser_setup_http_recvcb(void *arg, struct tcp_pcb *http_client, s
   if (c_strncmp(data, "GET ", 4) == 0)
   {
     if (c_strncmp(data + 4, "/ ", 2) == 0)
+    {
+      enduser_setup_http_serve_302(http_client);
+      goto free_out;
+    }
+    else if (c_strncmp(data + 4, "/configure", 10) == 0)
     {
       if (enduser_setup_check_host_header(data, data_len) != 0)
       {

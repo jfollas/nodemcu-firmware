@@ -832,6 +832,7 @@ static int enduser_setup_check_host_header(char *data, unsigned short data_len)
   }
 
   if (c_strncmp(host_str, state->softAPipaddr, c_strlen(state->softAPipaddr)) != 0)
+  {
     ENDUSER_SETUP_DEBUG("Different Host Found");    
     return 2;
   }

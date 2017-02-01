@@ -650,22 +650,27 @@ static void do_start_ap (task_param_t param, uint8_t prio)
 {
   ENDUSER_SETUP_DEBUG("do_start_ap");
 
+  ENDUSER_SETUP_DEBUG("-> wifi_station_disconnect");
+  wifi_station_disconnect();
+
   struct softap_config *cnf = (struct softap_config *)param;
   (void)prio;  
 
   cnf->channel = state->softAPchannel;
   cnf->beacon_interval = 1024;
 
-  ENDUSER_SETUP_DEBUG("-> wifi_station_disconnect");
-  wifi_station_disconnect();
   ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(SOFTAP)");
   wifi_set_opmode(SOFTAP_MODE); 
   ENDUSER_SETUP_DEBUG("-> wifi_softap_set_config");  
   wifi_softap_set_config(cnf);
 
 #if ENDUSER_SETUP_DEBUG_ENABLE  
+    struct softap_config vcnf;
+    ENDUSER_SETUP_DEBUG("-> wifi_softap_get_config");    
+    wifi_softap_get_config(&vcnf);
+
   char debuginfo[100];
-  c_sprintf(debuginfo, "SSID: %s, CHAN: %d", cnf->ssid, cnf->channel);
+  c_sprintf(debuginfo, "SSID: %s, CHAN: %d", vcnf->ssid, vcnf->channel);
   ENDUSER_SETUP_DEBUG(debuginfo);  
 #endif  
 
@@ -1533,15 +1538,15 @@ static void enduser_setup_ap_start(void)
     cnf->authmode = AUTH_OPEN;
     cnf->ssid_hidden = 0;
     cnf->max_connection = 5;
-
-    task_post_medium(do_start_ap_handle, (task_param_t) cnf);         
+         
   }
   else
   {
     ENDUSER_SETUP_DEBUG("-> wifi_softap_get_config");    
     wifi_softap_get_config(cnf);
-    //wifi_set_channel(state->softAPchannel);  
   }
+
+  task_post_medium(do_start_ap_handle, (task_param_t) cnf);  
 }
 
 static void on_initial_scan_done (void *arg, STATUS status)

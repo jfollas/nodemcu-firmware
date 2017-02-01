@@ -1538,9 +1538,9 @@ static void enduser_setup_ap_start(void)
   }
   else
   {
-    //ENDUSER_SETUP_DEBUG("-> wifi_softap_get_config");    
-    //wifi_softap_get_config(cnf);
-    wifi_set_channel(state->softAPchannel);  
+    ENDUSER_SETUP_DEBUG("-> wifi_softap_get_config");    
+    wifi_softap_get_config(cnf);
+    //wifi_set_channel(state->softAPchannel);  
   }
 }
 

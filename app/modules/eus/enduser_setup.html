@@ -178,7 +178,7 @@
 	<script>
 		var $ = function (selector) { return document.querySelector(selector); };
 		var ab = $('#networks'), ap = $('#aplist');
-		var stopAll = false, ra, rs, submitted = false;
+		var stopAll = false, ra, rs, submitted = false, nr=0;
 
 		function show(f, y) {
 			if (y == null) y = f;
@@ -203,9 +203,15 @@
 			clearTimeout(rs);
 			rs = to(refr, 5);
 
+			if (s != 0) 
+				nr=0;
+				
 			if (s != 200) {
 				if (s == 0) {
-					$('#st').innerText = 'Waiting for a response...';
+					$('#st').innerHTML = 'Waiting for a response...';
+					if (++nr > 3) {
+						$('#st').innerHTML+=' You may need<br>to reconnect to the device.';
+					}
 				} else if (s == 404) {
 					$('#st').innerHTML = 'Network Changed. You may need to<br/>manually reconnect to the device.';
 				} else {
@@ -231,7 +237,7 @@
 
 				if (d.status == 255)
 					st = 'Not in STATION mode';
-					
+
 				if (st == null)
 					st = "";
 

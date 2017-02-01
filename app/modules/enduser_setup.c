@@ -1297,7 +1297,7 @@ static err_t enduser_setup_http_recvcb(void *arg, struct tcp_pcb *http_client, s
   {
     if (c_strncmp(data + 4, "/ ", 2) == 0)
     {
-      if (enduser_setup_check_host_header(data) != 0)
+      if (enduser_setup_check_host_header(data, data_len) != 0)
       {
         enduser_setup_http_serve_302(http_client);
         goto free_out;

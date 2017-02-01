@@ -1820,11 +1820,8 @@ static int enduser_setup_init(lua_State *L)
     return 2;
   }
 
-  if (curr_state == STATION_GOT_IP)
-  {
-    c_sprintf (state->softAPipaddr, "%d.%d.%d.%d", IP2STR(&ip_info.ip.addr));
-    ENDUSER_SETUP_DEBUG(state->softAPipaddr);
-  }
+  c_sprintf (state->softAPipaddr, "%d.%d.%d.%d", IP2STR(&ip_info.ip.addr));
+  ENDUSER_SETUP_DEBUG(state->softAPipaddr);
 
   if (manual) 
   {

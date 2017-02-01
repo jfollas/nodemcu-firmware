@@ -229,6 +229,9 @@
 					'Wi-Fi successfully connected!'
 				][d.status];
 
+				if (d.status == 255)
+					st = 'Not in STATION mode';
+					
 				if (st == null)
 					st = "";
 

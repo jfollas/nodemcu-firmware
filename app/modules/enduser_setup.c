@@ -92,7 +92,7 @@ static const char http_html_gz_filename[] = "enduser_setup.html.gz";
 static const char http_html_filename[] = "enduser_setup.html";
 static const char http_header_200[] = "HTTP/1.1 200 OK\r\nCache-control:no-cache\r\nConnection:close\r\nContent-Type:text/html\r\n"; /* Note single \r\n here! */
 static const char http_header_204[] = "HTTP/1.1 204 No Content\r\nContent-Length:0\r\nConnection:close\r\n\r\n";
-static const char http_header_302[] = "HTTP/1.1 302 Moved\r\nLocation: /\r\nContent-Length:0\r\nConnection:close\r\n\r\n";
+//static const char http_header_302[] = "HTTP/1.1 302 Moved\r\nLocation: http://192.168.004.001/\r\nContent-Length:0\r\nConnection:close\r\n\r\n";
 static const char http_header_400[] = "HTTP/1.1 400 Bad request\r\nContent-Length:0\r\nConnection:close\r\n\r\n";
 static const char http_header_404[] = "HTTP/1.1 404 Not found\r\nContent-Length:0\r\nConnection:close\r\n\r\n";
 static const char http_header_405[] = "HTTP/1.1 405 Method Not Allowed\r\nContent-Length:0\r\nConnection:close\r\n\r\n";
@@ -123,6 +123,7 @@ typedef struct
   int lua_dbg_cb_ref;
   scan_listener_t *scan_listeners;
   uint8_t softAPchannel;
+  char *softAPipaddr;  
   uint8_t success;
   uint8_t callbackDone;
   uint8_t lastStationStatus;
@@ -788,6 +789,56 @@ static int enduser_setup_http_serve_header(struct tcp_pcb *http_client, const ch
   return 0;
 }
 
+static int enduser_setup_http_serve_302(struct tcp_pcb *http_client)
+{
+  ENDUSER_SETUP_DEBUG("enduser_setup_http_serve_302");
+  const char fmt[] =
+    "HTTP/1.1 302 Moved\r\n"
+    "Connection:close\r\n"
+    "Access-Control-Allow-Origin: *\r\n"  
+    "Location:http://%s/\r\n"
+    "\r\n\0";
+
+  int header_len = c_strlen(fmt) + c_strlen(state->softAPipaddr) - 2; // 2=token %s
+  char header[header_len];
+  memset(header, 0, header_len);
+  header_len = c_sprintf(header, fmt, state->softAPipaddr);
+
+  err_t err = tcp_write (http_client, header, header_len, TCP_WRITE_FLAG_COPY);
+  if (err != ERR_OK)
+  {
+    deferred_close (http_client);
+    ENDUSER_SETUP_ERROR("http_serve_header failed on tcp_write", ENDUSER_SETUP_ERR_UNKOWN_ERROR, ENDUSER_SETUP_ERR_NONFATAL);
+  }
+
+  return 0;
+}
+
+static int enduser_setup_check_host_header(char *data, unsigned short data_len)
+{
+  ENDUSER_SETUP_DEBUG("enduser_setup_check_host_header");
+
+  char *host_str  = (char *) ((uint32_t)strstr(&(data[6]), "Host:"));  
+  if (host_str == NULL)
+  {
+    ENDUSER_SETUP_DEBUG("Host Header Not Found");
+    return 1;
+  }
+
+  host_str += 5;
+  while (host_str[0] == ' ')
+  {
+    host_str++;
+  }
+
+  if (strstr(host_str, state->softAPipaddr) != host_str) 
+  {
+    ENDUSER_SETUP_DEBUG("Different Host Found");    
+    return 2;
+  }
+
+  return 0;
+}
 
 static err_t streamout_sent (void *arg, struct tcp_pcb *pcb, u16_t len)
 {
@@ -1246,7 +1297,12 @@ static err_t enduser_setup_http_recvcb(void *arg, struct tcp_pcb *http_client, s
   {
     if (c_strncmp(data + 4, "/ ", 2) == 0)
     {
-      if (enduser_setup_http_serve_html(http_client) != 0)
+      if (enduser_setup_check_host_header(data) != 0)
+      {
+        enduser_setup_http_serve_302(http_client);
+        goto free_out;
+      }
+      else if (enduser_setup_http_serve_html(http_client) != 0)
       {
         ENDUSER_SETUP_ERROR("http_recvcb failed. Unable to send HTML.", ENDUSER_SETUP_ERR_UNKOWN_ERROR, ENDUSER_SETUP_ERR_NONFATAL);
       }
@@ -1307,7 +1363,8 @@ static err_t enduser_setup_http_recvcb(void *arg, struct tcp_pcb *http_client, s
       switch (enduser_setup_http_handle_credentials(data, data_len))
       {
         case 0:
-          enduser_setup_http_serve_header(http_client, http_header_302, LITLEN(http_header_302));
+          //enduser_setup_http_serve_header(http_client, http_header_302, LITLEN(http_header_302));
+          enduser_setup_http_serve_302(http_client);
           break;
         case 1:
           enduser_setup_http_serve_header(http_client, http_header_400, LITLEN(http_header_400));
@@ -1644,6 +1701,7 @@ static void enduser_setup_free(void)
 
   c_free(state->http_payload_data);
   c_free(state->extra_data);
+  c_free(state->softAPipaddr);
 
   free_scan_listeners ();
 
@@ -1750,6 +1808,22 @@ static int enduser_setup_init(lua_State *L)
       state->connecting = 0;    
       state->shuttingDown = 0;
     }
+  }
+
+  struct ip_info ip_info;
+  ENDUSER_SETUP_DEBUG("-> wifi_get_ip_info");
+  wifi_get_ip_info(SOFTAP_IF, &ip_info);
+
+  state->softAPipaddr = (char *) os_zalloc(16);
+  if (state->softAPipaddr == NULL)
+  {
+    return 2;
+  }
+
+  if (curr_state == STATION_GOT_IP)
+  {
+    c_sprintf (state->softAPipaddr, "%d.%d.%d.%d", IP2STR(&ip_info.ip.addr));
+    ENDUSER_SETUP_DEBUG(state->softAPipaddr);
   }
 
   if (manual) 

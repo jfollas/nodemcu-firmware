@@ -648,13 +648,13 @@ static void do_station_cfg (task_param_t param, uint8_t prio)
 
 static void do_start_ap (task_param_t param, uint8_t prio)
 {
-  ENDUSER_SETUP_DEBUG("do_start_ap_handle");
+  ENDUSER_SETUP_DEBUG("do_start_ap");
 
   struct softap_config *cnf = (struct softap_config *)param;
   (void)prio;  
 
   cnf->channel = state->softAPchannel;
-  cnf->beacon_interval = 1024;
+  cnf->beacon_interval = 15360;
 
   ENDUSER_SETUP_DEBUG("-> wifi_station_disconnect");
   wifi_station_disconnect();
@@ -1528,15 +1528,15 @@ static void enduser_setup_ap_start(void)
     cnf->authmode = AUTH_OPEN;
     cnf->ssid_hidden = 0;
     cnf->max_connection = 5;
+
+    task_post_medium(do_start_ap_handle, (task_param_t) cnf);         
   }
   else
   {
-    ENDUSER_SETUP_DEBUG("-> wifi_softap_get_config");    
-    wifi_softap_get_config(cnf);
-    //wifi_set_channel(state->softAPchannel);  
+    //ENDUSER_SETUP_DEBUG("-> wifi_softap_get_config");    
+    //wifi_softap_get_config(cnf);
+    wifi_set_channel(state->softAPchannel);  
   }
-
-  task_post_medium(do_start_ap_handle, (task_param_t) cnf);     
 }
 
 static void on_initial_scan_done (void *arg, STATUS status)

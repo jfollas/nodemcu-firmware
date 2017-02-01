@@ -203,17 +203,17 @@
 			clearTimeout(rs);
 			rs = to(refr, 5);
 
-			if (s != 0) 
+			if (s !== 0) 
 				nr=0;
 
-			if (s != 200) {
-				if (s == 0) {
+			if (s !== 200) {
+				if (s === 0) {
 					nr++;
 					$('#st').innerHTML = 'Waiting for a response... ' + nr;
 					if (nr > 2) {
 						$('#st').innerHTML ='Waiting for a response... You may need<br>to reconnect to the device.';
 					}
-				} else if (s == 404) {
+				} else if (s === 404) {
 					$('#st').innerHTML = 'Network Changed. You may need to<br/>manually reconnect to the device.';
 				} else {
 					$('#st').innerText = 'Unexpected Status: ' + (s === -1 ? 'timed out' : s);

@@ -1517,7 +1517,7 @@ static void enduser_setup_ap_start(void)
 
   if (state != NULL && state->softAPconfigured)
   {
-    wifi_set_channel(state->softAPchannel)
+    wifi_set_channel(state->softAPchannel);
     return;
   }
 

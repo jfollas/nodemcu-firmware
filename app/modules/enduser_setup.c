@@ -124,6 +124,7 @@ typedef struct
   scan_listener_t *scan_listeners;
   uint8_t softAPchannel;
   char *softAPipaddr;  
+  uint8_t softAPconfigured;
   uint8_t success;
   uint8_t callbackDone;
   uint8_t lastStationStatus;
@@ -657,7 +658,6 @@ static void do_start_ap (task_param_t param, uint8_t prio)
   (void)prio;  
 
   cnf->channel = state->softAPchannel;
-  cnf->beacon_interval = 1024;
 
   ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(SOFTAP)");
   wifi_set_opmode(SOFTAP_MODE); 
@@ -674,6 +674,7 @@ static void do_start_ap (task_param_t param, uint8_t prio)
   ENDUSER_SETUP_DEBUG(debuginfo);  
 #endif  
 
+  state->softAPconfigured = 1;
   luaM_free(lua_getstate(), cnf);
 }
 
@@ -1514,6 +1515,12 @@ static void enduser_setup_ap_start(void)
 {
   ENDUSER_SETUP_DEBUG("enduser_setup_ap_start");
 
+  if (state != NULL && state->softAPconfigured)
+  {
+    wifi_set_channel(state->softAPchannel)
+    return;
+  }
+
 #ifndef ENDUSER_SETUP_AP_SSID
   #define ENDUSER_SETUP_AP_SSID "SetupGadget"
 #endif
@@ -1824,7 +1831,7 @@ static int enduser_setup_init(lua_State *L)
   ENDUSER_SETUP_DEBUG("-> wifi_get_ip_info");
   wifi_get_ip_info(SOFTAP_IF, &ip_info);
 
-  state->softAPipaddr = (char *) os_zalloc(16);
+
   if (state->softAPipaddr == NULL)
   {
     return 2;

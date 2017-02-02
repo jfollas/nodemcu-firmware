@@ -1515,8 +1515,9 @@ static void enduser_setup_ap_start(void)
 {
   ENDUSER_SETUP_DEBUG("enduser_setup_ap_start");
 
-  if (state != NULL && state->softAPconfigured)
+  if (state->softAPconfigured)
   {
+    ENDUSER_SETUP_DEBUG("-> wifi_set_channel");
     wifi_set_channel(state->softAPchannel);
     return;
   }
@@ -1819,6 +1820,7 @@ static int enduser_setup_init(lua_State *L)
       state->lua_dbg_cb_ref = LUA_NOREF;    
 
       state->softAPchannel = 1;
+      state->softAPconfigured = 0;
       state->success = 0;
       state->callbackDone = 0;
       state->lastStationStatus = 0;

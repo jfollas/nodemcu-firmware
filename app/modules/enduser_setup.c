@@ -654,6 +654,9 @@ static void do_start_ap (task_param_t param, uint8_t prio)
   ENDUSER_SETUP_DEBUG("-> wifi_station_disconnect");
   wifi_station_disconnect();
 
+  struct softap_config *cnf = (struct softap_config *)param;
+  (void)prio;  
+
   if (state->softAPconfigured)
   {
     ENDUSER_SETUP_DEBUG("-> wifi_set_channel");
@@ -661,9 +664,6 @@ static void do_start_ap (task_param_t param, uint8_t prio)
   }
   else
   {
-    struct softap_config *cnf = (struct softap_config *)param;
-    (void)prio;  
-
     cnf->channel = state->softAPchannel;
     cnf->beacon_interval = 100;
 

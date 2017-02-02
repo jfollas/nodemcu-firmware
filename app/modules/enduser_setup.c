@@ -654,25 +654,34 @@ static void do_start_ap (task_param_t param, uint8_t prio)
   ENDUSER_SETUP_DEBUG("-> wifi_station_disconnect");
   wifi_station_disconnect();
 
-  struct softap_config *cnf = (struct softap_config *)param;
-  (void)prio;  
+  if (state->softAPconfigured)
+  {
+    ENDUSER_SETUP_DEBUG("-> wifi_set_channel");
+    wifi_set_channel(state->softAPchannel);
+  }
+  else
+  {
+    struct softap_config *cnf = (struct softap_config *)param;
+    (void)prio;  
 
-  cnf->channel = state->softAPchannel;
+    cnf->channel = state->softAPchannel;
+    cnf->beacon_interval = 100;
 
-  ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(SOFTAP)");
-  wifi_set_opmode(SOFTAP_MODE); 
-  ENDUSER_SETUP_DEBUG("-> wifi_softap_set_config");  
-  wifi_softap_set_config(cnf);
+    ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(SOFTAP)");
+    wifi_set_opmode(SOFTAP_MODE); 
+    ENDUSER_SETUP_DEBUG("-> wifi_softap_set_config");  
+    wifi_softap_set_config(cnf);
 
 #if ENDUSER_SETUP_DEBUG_ENABLE  
-  struct softap_config vcnf;
-  ENDUSER_SETUP_DEBUG("-> wifi_softap_get_config");    
-  wifi_softap_get_config(&vcnf);
+    struct softap_config vcnf;
+    ENDUSER_SETUP_DEBUG("-> wifi_softap_get_config");    
+    wifi_softap_get_config(&vcnf);
 
-  char debuginfo[100];
-  c_sprintf(debuginfo, "SSID: %s, CHAN: %d", vcnf.ssid, vcnf.channel);
-  ENDUSER_SETUP_DEBUG(debuginfo);  
+    char debuginfo[100];
+    c_sprintf(debuginfo, "SSID: %s, CHAN: %d", vcnf.ssid, vcnf.channel);
+    ENDUSER_SETUP_DEBUG(debuginfo);  
 #endif  
+  }
 
   state->softAPconfigured = 1;
   luaM_free(lua_getstate(), cnf);
@@ -1515,13 +1524,6 @@ static void enduser_setup_ap_start(void)
 {
   ENDUSER_SETUP_DEBUG("enduser_setup_ap_start");
 
-  if (state->softAPconfigured)
-  {
-    ENDUSER_SETUP_DEBUG("-> wifi_set_channel");
-    wifi_set_channel(state->softAPchannel);
-    return;
-  }
-
 #ifndef ENDUSER_SETUP_AP_SSID
   #define ENDUSER_SETUP_AP_SSID "SetupGadget"
 #endif
@@ -1546,7 +1548,6 @@ static void enduser_setup_ap_start(void)
     cnf->authmode = AUTH_OPEN;
     cnf->ssid_hidden = 0;
     cnf->max_connection = 5;
-         
   }
   else
   {

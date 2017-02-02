@@ -1833,7 +1833,7 @@ static int enduser_setup_init(lua_State *L)
   ENDUSER_SETUP_DEBUG("-> wifi_get_ip_info");
   wifi_get_ip_info(SOFTAP_IF, &ip_info);
 
-
+  state->softAPipaddr = (char *) os_zalloc(16);
   if (state->softAPipaddr == NULL)
   {
     return 2;

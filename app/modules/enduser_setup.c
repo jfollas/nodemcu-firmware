@@ -1483,6 +1483,12 @@ static void enduser_setup_ap_stop(void)
   wifi_set_opmode(~SOFTAP_MODE & wifi_get_opmode());
 }
 
+static void on_channel_change_scan_done (void *arg, STATUS status)
+{
+  ENDUSER_SETUP_DEBUG("on_channel_change_scan_done");
+  // NOP
+}
+
 static void do_start_ap (task_param_t param, uint8_t prio)
 {
   ENDUSER_SETUP_DEBUG("do_start_ap");
@@ -1493,14 +1499,19 @@ static void do_start_ap (task_param_t param, uint8_t prio)
   struct softap_config *cnf = (struct softap_config *)param;
   (void)prio;  
 
-  // if (state->softAPconfigured)
-  // {
-  //   ENDUSER_SETUP_DEBUG("ALREADY CONFIGURED");
-  //   ENDUSER_SETUP_DEBUG("-> wifi_set_channel");    
-  //   wifi_set_channel(state->softAPchannel);
-  // }
-  // else
-  // {
+  if (state->softAPconfigured)
+  {
+    ENDUSER_SETUP_DEBUG("ALREADY CONFIGURED");
+
+    /* hack to change the channel without resetting the SoftAP */
+    struct scan_config scancfg;
+    scancfg.channel = state->softAPchannel;
+
+    ENDUSER_SETUP_DEBUG("-> wifi_station_scan");    
+    wifi_station_scan(&scancfg, on_channel_change_scan_done);
+  }
+  else
+  {
     cnf->channel = state->softAPchannel;
     cnf->beacon_interval = 100;
 
@@ -1516,7 +1527,7 @@ static void do_start_ap (task_param_t param, uint8_t prio)
     c_sprintf(debuginfo, "SSID: %s, CHAN: %d", vcnf.ssid, vcnf.channel);
     ENDUSER_SETUP_DEBUG(debuginfo);  
 #endif  
-  // }
+  }
 
   state->softAPconfigured = 1;
   luaM_free(lua_getstate(), cnf);

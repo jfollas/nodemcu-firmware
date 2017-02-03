@@ -1498,7 +1498,7 @@ static void do_start_ap (task_param_t param, uint8_t prio)
     wifi_set_opmode(STATIONAP_MODE); 
 
     struct station_config scfg;
-    c_memset(scff, 0, sizeof(struct station_config));
+    c_memset(scfg, 0, sizeof(struct station_config));
     ENDUSER_SETUP_DEBUG("-> wifi_station_set_config_current"); 
     wifi_station_set_config_current(&scfg);
     

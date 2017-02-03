@@ -72,6 +72,10 @@
 #define ENDUSER_SETUP_ERR_MAX_NUMBER             5
 #define ENDUSER_SETUP_ERR_ALREADY_INITIALIZED    6
 
+#ifndef ENDUSER_SETUP_AP_SSID
+  #define ENDUSER_SETUP_AP_SSID "SetupGadget"
+#endif
+
 /**
  * DNS Response Packet:
  *
@@ -644,43 +648,6 @@ static void do_station_cfg (task_param_t param, uint8_t prio)
   wifi_station_set_config (cnf);
   ENDUSER_SETUP_DEBUG("-> wifi_station_connect");  
   wifi_station_connect ();
-  luaM_free(lua_getstate(), cnf);
-}
-
-static void do_start_ap (task_param_t param, uint8_t prio)
-{
-  ENDUSER_SETUP_DEBUG("do_start_ap");
-
-  struct softap_config *cnf = (struct softap_config *)param;
-  (void)prio;  
-
-  if (state->softAPconfigured)
-  {
-    ENDUSER_SETUP_DEBUG("ALREADY CONFIGURED");
-    //wifi_set_channel(state->softAPchannel);
-  }
-  else
-  {
-    cnf->channel = state->softAPchannel;
-    cnf->beacon_interval = 100;
-
-    ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(SOFTAP)");
-    wifi_set_opmode(SOFTAP_MODE); 
-    ENDUSER_SETUP_DEBUG("-> wifi_softap_set_config");  
-    wifi_softap_set_config(cnf);
-
-#if ENDUSER_SETUP_DEBUG_ENABLE  
-    struct softap_config vcnf;
-    ENDUSER_SETUP_DEBUG("-> wifi_softap_get_config");    
-    wifi_softap_get_config(&vcnf);
-
-    char debuginfo[100];
-    c_sprintf(debuginfo, "SSID: %s, CHAN: %d", vcnf.ssid, vcnf.channel);
-    ENDUSER_SETUP_DEBUG(debuginfo);  
-#endif  
-  }
-
-  state->softAPconfigured = 1;
   luaM_free(lua_getstate(), cnf);
 }
 
@@ -1516,15 +1483,49 @@ static void enduser_setup_ap_stop(void)
   wifi_set_opmode(~SOFTAP_MODE & wifi_get_opmode());
 }
 
+static void do_start_ap (task_param_t param, uint8_t prio)
+{
+  ENDUSER_SETUP_DEBUG("do_start_ap");
+
+  ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(SOFTAP)");
+  wifi_set_opmode(SOFTAP_MODE); 
+
+  struct softap_config *cnf = (struct softap_config *)param;
+  (void)prio;  
+
+  if (state->softAPconfigured)
+  {
+    ENDUSER_SETUP_DEBUG("ALREADY CONFIGURED");
+    ENDUSER_SETUP_DEBUG("-> wifi_set_channel");    
+    wifi_set_channel(state->softAPchannel);
+  }
+  else
+  {
+    cnf->channel = state->softAPchannel;
+    cnf->beacon_interval = 100;
+
+    ENDUSER_SETUP_DEBUG("-> wifi_softap_set_config");  
+    wifi_softap_set_config(cnf);
+
+#if ENDUSER_SETUP_DEBUG_ENABLE  
+    struct softap_config vcnf;
+    ENDUSER_SETUP_DEBUG("-> wifi_softap_get_config");    
+    wifi_softap_get_config(&vcnf);
+
+    char debuginfo[100];
+    c_sprintf(debuginfo, "SSID: %s, CHAN: %d", vcnf.ssid, vcnf.channel);
+    ENDUSER_SETUP_DEBUG(debuginfo);  
+#endif  
+  }
+
+  state->softAPconfigured = 1;
+  luaM_free(lua_getstate(), cnf);
+}
 
 static void enduser_setup_ap_start(void)
 {
   ENDUSER_SETUP_DEBUG("enduser_setup_ap_start");
 
-#ifndef ENDUSER_SETUP_AP_SSID
-  #define ENDUSER_SETUP_AP_SSID "SetupGadget"
-#endif
-  
   struct softap_config *cnf = luaM_malloc(lua_getstate(), sizeof(struct softap_config));
 
   if (!manual)
@@ -1554,7 +1555,9 @@ static void enduser_setup_ap_start(void)
 
   ENDUSER_SETUP_DEBUG("-> wifi_station_disconnect");
   wifi_station_disconnect();
-  
+
+  /* Do the actual config in a task because the initial AP Scan is still 
+     cleaning up (turning off the STA at this point results in a crash) */
   task_post_medium(do_start_ap_handle, (task_param_t) cnf);  
 }
 

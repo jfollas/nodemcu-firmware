@@ -256,8 +256,12 @@ static void enduser_setup_check_station_stop(void)
 static void enduser_setup_check_station(void *p)
 {
   ENDUSER_SETUP_DEBUG("enduser_setup_check_station");
-  ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(STATIONAP)");
-  wifi_set_opmode(STATIONAP_MODE);
+
+  if (wifi_get_opmode() != STATIONAP_MODE)
+  {
+    ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(STATIONAP)");    
+    wifi_set_opmode(STATIONAP_MODE);
+  }
 
   (void)p;
   struct ip_info ip;

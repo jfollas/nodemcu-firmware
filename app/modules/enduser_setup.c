@@ -1526,7 +1526,7 @@ static void do_start_ap (task_param_t param, uint8_t prio)
     wifi_set_opmode(SOFTAP_MODE); 
 
     cnf->channel = state->softAPchannel;
-    cnf->beacon_interval = 100;
+    cnf->beacon_interval = 500;
 
     ENDUSER_SETUP_DEBUG("-> wifi_softap_set_config_current");  
     wifi_softap_set_config_current(cnf);
@@ -2015,3 +2015,4 @@ static const LUA_REG_TYPE enduser_setup_map[] = {
 };
 
 NODEMCU_MODULE(ENDUSER_SETUP, "enduser_setup", enduser_setup_map, NULL);
+NODEMCU_MODULE(ENDUSER_SETUP, "eus", enduser_setup_map, NULL);

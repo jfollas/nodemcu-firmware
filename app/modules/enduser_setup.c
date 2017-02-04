@@ -1524,8 +1524,8 @@ static void do_start_ap (task_param_t param, uint8_t prio)
     cnf->channel = state->softAPchannel;
     cnf->beacon_interval = 100;
 
-    ENDUSER_SETUP_DEBUG("-> wifi_softap_set_config");  
-    wifi_softap_set_config(cnf);
+    ENDUSER_SETUP_DEBUG("-> wifi_softap_set_config_current");  
+    wifi_softap_set_config_current(cnf);
 
 #if ENDUSER_SETUP_DEBUG_ENABLE  
     struct softap_config vcnf;

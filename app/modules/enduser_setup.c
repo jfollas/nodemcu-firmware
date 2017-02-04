@@ -259,8 +259,8 @@ static void enduser_setup_check_station(void *p)
 
   if (wifi_get_opmode() != STATIONAP_MODE)
   {
-    ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(STATIONAP)");    
-    wifi_set_opmode(STATIONAP_MODE);
+    ENDUSER_SETUP_DEBUG("-> wifi_set_opmode_current(STATIONAP)");    
+    wifi_set_opmode_current(STATIONAP_MODE);
   }
 
   (void)p;
@@ -304,8 +304,8 @@ static void enduser_setup_check_station(void *p)
       
         ENDUSER_SETUP_DEBUG("-> wifi_station_disconnect");      
         wifi_station_disconnect();
-        ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(SOFTAP)");        
-        wifi_set_opmode(SOFTAP_MODE);
+        ENDUSER_SETUP_DEBUG("-> wifi_set_opmode_current(SOFTAP)");        
+        wifi_set_opmode_current(SOFTAP_MODE);
         enduser_setup_ap_start();
       }
    }
@@ -333,8 +333,8 @@ static void enduser_setup_check_station(void *p)
     ENDUSER_SETUP_DEBUG("Turning off Station due to different channel than AP");
     ENDUSER_SETUP_DEBUG("-> wifi_station_disconnect");    
     wifi_station_disconnect();
-    ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(SOFTAP)");    
-    wifi_set_opmode(SOFTAP_MODE);
+    ENDUSER_SETUP_DEBUG("-> wifi_set_opmode_current(SOFTAP)");    
+    wifi_set_opmode_current(SOFTAP_MODE);
     enduser_setup_ap_start();
   }
   
@@ -1483,8 +1483,8 @@ static void enduser_setup_ap_stop(void)
 {
   ENDUSER_SETUP_DEBUG("enduser_setup_ap_stop");
 
-  ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(~SOFTAP)");
-  wifi_set_opmode(~SOFTAP_MODE & wifi_get_opmode());
+  ENDUSER_SETUP_DEBUG("-> wifi_set_opmode_current(~SOFTAP)");
+  wifi_set_opmode_current(~SOFTAP_MODE & wifi_get_opmode());
 }
 
 static void do_start_ap (task_param_t param, uint8_t prio)
@@ -1498,19 +1498,11 @@ static void do_start_ap (task_param_t param, uint8_t prio)
   {
     ENDUSER_SETUP_DEBUG("ALREADY CONFIGURED: Existing config");
  
-    ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(STATIONAP)");
-    wifi_set_opmode(STATIONAP_MODE); 
-
-    struct station_config scfg;
-    c_memset(&scfg, 0, sizeof(struct station_config));
-    ENDUSER_SETUP_DEBUG("-> wifi_station_set_config_current"); 
-    wifi_station_set_config_current(&scfg);
-    
     ENDUSER_SETUP_DEBUG("-> wifi_set_channel");     
     wifi_set_channel(state->softAPchannel);
 
-    ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(SOFTAP)");
-    wifi_set_opmode(SOFTAP_MODE); 
+    ENDUSER_SETUP_DEBUG("-> wifi_set_opmode_current(SOFTAP)");
+    wifi_set_opmode_current(SOFTAP_MODE); 
 
     struct softap_config vcnf1;
     ENDUSER_SETUP_DEBUG("-> wifi_softap_get_config");    
@@ -1522,11 +1514,11 @@ static void do_start_ap (task_param_t param, uint8_t prio)
   }
   else
   {
-    ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(SOFTAP)");
-    wifi_set_opmode(SOFTAP_MODE); 
+    ENDUSER_SETUP_DEBUG("-> wifi_set_opmode_current(SOFTAP)");
+    wifi_set_opmode_current(SOFTAP_MODE); 
 
     cnf->channel = state->softAPchannel;
-    cnf->beacon_interval = 50;
+    cnf->beacon_interval = 150;
 
     ENDUSER_SETUP_DEBUG("-> wifi_softap_set_config_current");  
     wifi_softap_set_config_current(cnf);
@@ -1944,8 +1936,8 @@ static int enduser_setup_start(lua_State *L)
   if (!manual)
   {
     ENDUSER_SETUP_DEBUG("Performing AP Scan to identify likely AP's channel. Enabling Station if it wasn't already.");    
-    ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(+STATION)");    
-    wifi_set_opmode(STATION_MODE | wifi_get_opmode());
+    ENDUSER_SETUP_DEBUG("-> wifi_set_opmode_current(+STATION)");    
+    wifi_set_opmode_current(STATION_MODE | wifi_get_opmode());
     ENDUSER_SETUP_DEBUG("-> wifi_station_scan");    
     wifi_station_scan(NULL, on_initial_scan_done);
   }
@@ -1993,8 +1985,8 @@ static int enduser_setup_stop(lua_State* L)
   }
   if (state != NULL && state->success && !state->callbackDone)
   {
-    ENDUSER_SETUP_DEBUG("-> wifi_set_opmode(+STATION)");    
-    wifi_set_opmode(STATION_MODE | wifi_get_opmode());
+    ENDUSER_SETUP_DEBUG("-> wifi_set_opmode_current(+STATION)");    
+    wifi_set_opmode_current(STATION_MODE | wifi_get_opmode());
     ENDUSER_SETUP_DEBUG("-> wifi_station_connect");    
     wifi_station_connect();
     enduser_setup_connected_callback();

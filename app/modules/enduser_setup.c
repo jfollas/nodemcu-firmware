@@ -2015,4 +2015,3 @@ static const LUA_REG_TYPE enduser_setup_map[] = {
 };
 
 NODEMCU_MODULE(ENDUSER_SETUP, "enduser_setup", enduser_setup_map, NULL);
-NODEMCU_MODULE(ENDUSER_SETUP, "eus", enduser_setup_map, NULL);

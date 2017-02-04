@@ -1526,7 +1526,7 @@ static void do_start_ap (task_param_t param, uint8_t prio)
     wifi_set_opmode(SOFTAP_MODE); 
 
     cnf->channel = state->softAPchannel;
-    cnf->beacon_interval = 500;
+    cnf->beacon_interval = 50;
 
     ENDUSER_SETUP_DEBUG("-> wifi_softap_set_config_current");  
     wifi_softap_set_config_current(cnf);
@@ -1569,7 +1569,7 @@ static void enduser_setup_ap_start(void)
     
     cnf->authmode = AUTH_OPEN;
     cnf->ssid_hidden = 0;
-    cnf->max_connection = 5;
+    cnf->max_connection = 4;
   }
   else
   {
